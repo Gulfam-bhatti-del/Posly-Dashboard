@@ -82,7 +82,6 @@ export default function DepositsPage() {
   const handleDeleteDeposit = async (deposit: Deposit) => {
     setDeleteLoading(true);
     try {
-      // Delete attachment from storage if exists
       if (deposit.attachment_url) {
         const fileName = deposit.attachment_url.split("/").pop();
         if (fileName) {
