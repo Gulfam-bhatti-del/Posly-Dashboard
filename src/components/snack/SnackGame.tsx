@@ -149,7 +149,7 @@ const Home: React.FC = () => {
         setSnake([[10, 10]]);
         setFood([5, 5]);
         setDirection([0, 1]);
-        setScore(0);
+        setScore(999);
         setGameOver(false);
         setGameStarted(false);
         setIsPaused(false); // Reset pause state
@@ -197,7 +197,7 @@ const Home: React.FC = () => {
                     ))}
                     {/* Render food */}
                     <div
-                        className={`absolute bg-red-500 rounded-r-2xl ${gameStarted && !gameOver && !isPaused ? 'animate-bounce-food' : ''}`} // Added animation class
+                        className={`absolute bg-red-500 rounded-full w-5 h-5 ${gameStarted && !gameOver && !isPaused ? 'animate-bounce-food' : ''}`} // Added animation class
                         style={{
                             left: food[1] * TILE_SIZE, // Column is X
                             top: food[0] * TILE_SIZE,  // Row is Y
