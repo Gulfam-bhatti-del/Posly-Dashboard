@@ -197,7 +197,7 @@ const Home: React.FC = () => {
                     ))}
                     {/* Render food */}
                     <div
-                        className={`absolute bg-red-500 rounded-4xl ${gameStarted && !gameOver && !isPaused ? 'animate-bounce-food' : ''}`} // Added animation class
+                        className={`absolute bg-red-500 rounded-full ${gameStarted && !gameOver && !isPaused ? 'animate-bounce-food' : ''}`} // Added animation class
                         style={{
                             left: food[1] * TILE_SIZE, // Column is X
                             top: food[0] * TILE_SIZE,  // Row is Y
