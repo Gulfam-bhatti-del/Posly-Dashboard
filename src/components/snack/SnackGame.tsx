@@ -16,7 +16,7 @@ const Home: React.FC = () => {
     const [snake, setSnake] = useState<SnakeSegment[]>([[10, 10]]); // Initial snake position (head at [10,10])
     const [food, setFood] = useState<SnakeSegment>([5, 5]); // Initial food position
     const [direction, setDirection] = useState<Direction>([0, 1]); // Initial direction: right [x, y]
-    const [score, setScore] = useState<number>(100);
+    const [score, setScore] = useState<number>(0);
     const [gameOver, setGameOver] = useState<boolean>(false);
     const [gameStarted, setGameStarted] = useState<boolean>(false);
     const [speed, setSpeed] = useState<number>(INITIAL_SPEED);
@@ -149,7 +149,7 @@ const Home: React.FC = () => {
         setSnake([[10, 10]]);
         setFood([5, 5]);
         setDirection([0, 1]);
-        setScore(0);
+        setScore(219);
         setGameOver(false);
         setGameStarted(false);
         setIsPaused(false); // Reset pause state
