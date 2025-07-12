@@ -16,7 +16,7 @@ const Home: React.FC = () => {
     const [snake, setSnake] = useState<SnakeSegment[]>([[10, 10]]); // Initial snake position (head at [10,10])
     const [food, setFood] = useState<SnakeSegment>([5, 5]); // Initial food position
     const [direction, setDirection] = useState<Direction>([0, 1]); // Initial direction: right [x, y]
-    const [score, setScore] = useState<number>(100);
+    const [score, setScore] = useState<number>(0);
     const [gameOver, setGameOver] = useState<boolean>(false);
     const [gameStarted, setGameStarted] = useState<boolean>(false);
     const [speed, setSpeed] = useState<number>(INITIAL_SPEED);
@@ -197,7 +197,7 @@ const Home: React.FC = () => {
                     ))}
                     {/* Render food */}
                     <div
-                        className={`absolute bg-red-500 rounded-full ${gameStarted && !gameOver && !isPaused ? 'animate-bounce-food' : ''}`} // Added animation class
+                        className={`absolute bg-red-500 rounded-4xl ${gameStarted && !gameOver && !isPaused ? 'animate-bounce-food' : ''}`} // Added animation class
                         style={{
                             left: food[1] * TILE_SIZE, // Column is X
                             top: food[0] * TILE_SIZE,  // Row is Y
