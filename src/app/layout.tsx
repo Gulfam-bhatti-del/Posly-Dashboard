@@ -8,6 +8,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/Sidebar"
 import { NavigationProgress } from "@/components/navigation-progress"
 import { PageTransition } from "@/components/page-transition"
+import { AuthWrapper } from "@/components/auth-wrapper"
 
 export const metadata: Metadata = {
   title: "Posly Dashboard",
@@ -22,6 +23,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <AuthWrapper>
+
         <NavigationProgress />
         <SidebarProvider>
           <AppSidebar />
@@ -37,6 +40,7 @@ export default function RootLayout({
             </div>
           </SidebarInset>
         </SidebarProvider>
+        </AuthWrapper>
       </body>
     </html>
   )
