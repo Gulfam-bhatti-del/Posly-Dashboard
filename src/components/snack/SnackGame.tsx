@@ -149,7 +149,7 @@ const Home: React.FC = () => {
         setSnake([[10, 10]]);
         setFood([5, 5]);
         setDirection([0, 1]);
-        setScore(219);
+        setScore(0);
         setGameOver(false);
         setGameStarted(false);
         setIsPaused(false); // Reset pause state
