@@ -154,6 +154,9 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        {" "}
+        {/* Adjusted padding */}
         <div className="flex justify-center items-center h-64">
           <div className="text-lg">Loading products...</div>
         </div>
@@ -162,6 +165,11 @@ export default function ProductsPage() {
   }
 
   return (
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      {" "}
+      <div className="mb-6 -mt-2 sm:-mt-3">
+        {" "}
+        <h1 className="text-2xl md:text-3xl mb-3">All Products</h1>{" "}
         <Separator />
       </div>
       <Card>
