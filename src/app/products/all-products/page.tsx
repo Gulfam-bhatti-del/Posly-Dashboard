@@ -154,7 +154,6 @@ export default function ProductsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
         <div className="flex justify-center items-center h-64">
           <div className="text-lg">Loading products...</div>
         </div>
@@ -163,19 +162,18 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6 -mt-3">
-        <h1 className="text-2xl mb-3">All Products</h1>
         <Separator />
       </div>
-
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-end gap-2 -mb-4">
-            <Link href="/products/create-product">
+        <CardHeader className="p-4 sm:p-6 pb-0">
+          {" "}
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-2 -mb-2 sm:-mb-4">
+            {" "}
+            <Link href="/products/create-product" className="w-full sm:w-auto">
+              {" "}
               <Button
                 variant="outline"
-                className="border border-blue-700 hover:bg-blue-700 hover:text-white"
+                className="w-full border border-blue-700 hover:bg-blue-700 hover:text-white"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Create
@@ -183,7 +181,7 @@ export default function ProductsPage() {
             </Link>
             <Button
               variant="outline"
-              className="border border-green-700 hover:bg-green-700 hover:text-white"
+              className="w-full sm:w-auto border border-green-700 hover:bg-green-700 hover:text-white"
             >
               <Filter className="w-4 h-4 mr-2" />
               Filters
@@ -191,11 +189,17 @@ export default function ProductsPage() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <div className="flex items-center gap-4 w-full md:w-auto">
+        <CardContent className="p-4 sm:p-6">
+          {" "}
+          {/* Adjusted padding */}
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-center md:justify-start gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 justify-start w-full md:w-auto">
+              {" "}
+              {/* Changed to flex-col on small screens, stretch items */}
               <Select value={itemsPerPage} onValueChange={setItemsPerPage}>
-                <SelectTrigger className="w-20 border-gray-300">
+                <SelectTrigger className="w-full sm:w-20 border-gray-300">
+                  {" "}
+                  {/* Full width on small screens */}
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -205,13 +209,12 @@ export default function ProductsPage() {
                   <SelectItem value="100">100</SelectItem>
                 </SelectContent>
               </Select>
-
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-gray-300 hover:bg-gray-50"
+                    className="w-full sm:w-auto border-gray-300 hover:bg-gray-50"
                   >
                     EXPORT
                     <ChevronDown className="w-4 h-4 ml-2" />
@@ -225,7 +228,7 @@ export default function ProductsPage() {
               </DropdownMenu>
             </div>
 
-            <div className="relative w-full md:w-64">
+            <div className="relative w-full md:w-64 md:justify-end md:flex md:items-center md:ml-auto">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 placeholder="Search..."
@@ -235,21 +238,28 @@ export default function ProductsPage() {
               />
             </div>
           </div>
-
           <div className="border rounded-lg overflow-x-auto">
-            <Table className="min-w-full">
+            {" "}
+            {/* Added overflow-x-auto for table on small screens */}
+            <Table className="min-w-full table-auto">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Image</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Brand</TableHead>
-                  <TableHead>Product Cost</TableHead>
-                  <TableHead>Product Price</TableHead>
-                  <TableHead>Current Stock</TableHead>
-                  <TableHead>Action</TableHead>
+                  <TableHead className="whitespace-nowrap">Image</TableHead>
+                  <TableHead className="whitespace-nowrap">Type</TableHead>
+                  <TableHead className="whitespace-nowrap">Name</TableHead>
+                  <TableHead className="whitespace-nowrap">Code</TableHead>
+                  <TableHead className="whitespace-nowrap">Category</TableHead>
+                  <TableHead className="whitespace-nowrap">Brand</TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    Product Cost
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    Product Price
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    Current Stock
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -264,7 +274,9 @@ export default function ProductsPage() {
                     .slice(0, Number.parseInt(itemsPerPage))
                     .map((product) => (
                       <TableRow key={product.id}>
-                        <TableCell>
+                        <TableCell className="flex-shrink-0">
+                          {" "}
+                          {/* Prevents image from shrinking */}
                           {product.image_url ? (
                             <img
                               src={product.image_url || "/placeholder.svg"}
@@ -277,17 +289,33 @@ export default function ProductsPage() {
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="capitalize">{product.type}</TableCell>
-                        <TableCell className="font-medium">{product.name}</TableCell>
-                        <TableCell>{product.code}</TableCell>
-                        <TableCell className="capitalize">{product.category}</TableCell>
-                        <TableCell className="capitalize">{product.brand || "N/D"}</TableCell>
-                        <TableCell>${product.cost.toFixed(2)}</TableCell>
-                        <TableCell>${product.price.toFixed(2)}</TableCell>
-                        <TableCell>
+                        <TableCell className="capitalize whitespace-nowrap">
+                          {product.type}
+                        </TableCell>
+                        <TableCell className="font-medium whitespace-nowrap">
+                          {product.name}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {product.code}
+                        </TableCell>
+                        <TableCell className="capitalize whitespace-nowrap">
+                          {product.category}
+                        </TableCell>
+                        <TableCell className="capitalize whitespace-nowrap">
+                          {product.brand || "N/D"}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          ${product.cost.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          ${product.price.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
                           {product.current_stock} {product.unit_sale}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {" "}
+                          {/* Prevents action buttons from wrapping */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0">
@@ -304,7 +332,9 @@ export default function ProductsPage() {
                                 <Eye className="w-4 h-4 mr-2" />
                                 View
                               </DropdownMenuItem>
-                              <Link href={`/products/all-products/${product.id}/edit`}>
+                              <Link
+                                href={`/products/all-products/${product.id}/edit`}
+                              >
                                 <DropdownMenuItem>
                                   <Edit className="w-4 h-4 mr-2" />
                                   Edit
@@ -329,12 +359,15 @@ export default function ProductsPage() {
               </TableBody>
             </Table>
           </div>
-
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
+              {" "}
+              {/* Centered on small screens */}
               Showing 1 to {products.length} of {products.length} entries
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
+              {" "}
+              {/* Centered on small screens */}
               <Button variant="outline" size="sm" className="border-gray-300">
                 Previous
               </Button>
@@ -348,14 +381,14 @@ export default function ProductsPage() {
           </div>
         </CardContent>
       </Card>
-
       {/* Delete Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the product "{productToDelete?.name}".
+              This will permanently delete the product "{productToDelete?.name}
+              ".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -370,10 +403,11 @@ export default function ProductsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       {/* View Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-md sm:max-w-lg md:max-w-2xl">
+          {" "}
+          {/* Adjusted max-width for dialog */}
           <DialogHeader>
             <DialogTitle>Product Details</DialogTitle>
             <DialogDescription>Complete product info</DialogDescription>
@@ -386,21 +420,29 @@ export default function ProductsPage() {
                     <img
                       src={productToView.image_url}
                       alt={productToView.name}
-                      className="w-48 h-48 object-cover rounded-lg"
+                      className="w-32 h-32 sm:w-48 sm:h-48 object-cover rounded-lg" // Responsive image size
                     />
                   </div>
                 )}
                 <div>
-                  <h3 className="font-semibold text-lg">{productToView.name}</h3>
-                  <p className="text-sm text-gray-600">Code: {productToView.code}</p>
+                  <h3 className="font-semibold text-lg">
+                    {productToView.name}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Code: {productToView.code}
+                  </p>
                 </div>
               </div>
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="space-y-3 text-sm">
+                {" "}
+                {/* Added text-sm for smaller font on details */}
+                <div className="grid grid-cols-2 gap-2">
                   <span className="font-medium">Category:</span>
                   <span className="capitalize">{productToView.category}</span>
                   <span className="font-medium">Brand:</span>
-                  <span className="capitalize">{productToView.brand || "N/A"}</span>
+                  <span className="capitalize">
+                    {productToView.brand || "N/A"}
+                  </span>
                   <span className="font-medium">Type:</span>
                   <span className="capitalize">{productToView.type}</span>
                   <span className="font-medium">Cost:</span>
@@ -408,9 +450,13 @@ export default function ProductsPage() {
                   <span className="font-medium">Price:</span>
                   <span>${productToView.price.toFixed(2)}</span>
                   <span className="font-medium">Stock:</span>
-                  <span>{productToView.current_stock} {productToView.unit_sale}</span>
+                  <span>
+                    {productToView.current_stock} {productToView.unit_sale}
+                  </span>
                   <span className="font-medium">Tax:</span>
-                  <span>{productToView.order_tax}% ({productToView.tax_method})</span>
+                  <span>
+                    {productToView.order_tax}% ({productToView.tax_method})
+                  </span>
                   <span className="font-medium">Min Qty:</span>
                   <span>{productToView.minimum_quantity}</span>
                   <span className="font-medium">Stock Alert:</span>
@@ -421,14 +467,18 @@ export default function ProductsPage() {
                 {productToView.details && (
                   <div>
                     <span className="font-medium">Details:</span>
-                    <p className="text-sm text-gray-600 mt-1">{productToView.details}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {productToView.details}
+                    </p>
                   </div>
                 )}
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
