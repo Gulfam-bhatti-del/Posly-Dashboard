@@ -106,7 +106,6 @@ export default function ProductsPage() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-
       setProducts(data || []);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -118,10 +117,8 @@ export default function ProductsPage() {
 
   const handleDeleteProduct = async () => {
     if (!productToDelete) return;
-
     setDeleting(true);
     try {
-      // Delete image from storage if exists
       if (productToDelete.image_url) {
         const imagePath = productToDelete.image_url.split("/").pop();
         if (imagePath) {
@@ -130,15 +127,12 @@ export default function ProductsPage() {
             .remove([`products/${imagePath}`]);
         }
       }
-
-      // Delete product from database
       const { error } = await supabase
         .from("products")
         .delete()
         .eq("id", productToDelete.id);
 
       if (error) throw error;
-
       toast.success("Product deleted successfully!");
       setProducts(products.filter((p) => p.id !== productToDelete.id));
       setDeleteDialogOpen(false);
@@ -158,24 +152,6 @@ export default function ProductsPage() {
       product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getProductImage = (product: Product) => {
-    if (product.image_url) {
-      return product.image_url;
-    }
-
-    const imageMap: { [key: string]: string } = {
-      fruits: "/placeholder.svg?height=40&width=40",
-      electronics: "/placeholder.svg?height=40&width=40",
-      computers: "/placeholder.svg?height=40&width=40",
-      shoes: "/placeholder.svg?height=40&width=40",
-      clothing: "/placeholder.svg?height=40&width=40",
-    };
-    return (
-      imageMap[product.category.toLowerCase()] ||
-      "/placeholder.svg?height=40&width=40"
-    );
-  };
-
   if (loading) {
     return (
       <div className="container mx-auto p-6">
@@ -192,6 +168,7 @@ export default function ProductsPage() {
         <h1 className="text-2xl mb-3">All Products</h1>
         <Separator />
       </div>
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-end gap-2 -mb-4">
@@ -215,8 +192,8 @@ export default function ProductsPage() {
         </CardHeader>
 
         <CardContent className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 w-full md:w-auto">
               <Select value={itemsPerPage} onValueChange={setItemsPerPage}>
                 <SelectTrigger className="w-20 border-gray-300">
                   <SelectValue />
@@ -248,19 +225,19 @@ export default function ProductsPage() {
               </DropdownMenu>
             </div>
 
-            <div className="relative">
+            <div className="relative w-full md:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-64"
+                className="pl-10 w-full"
               />
             </div>
           </div>
 
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
+          <div className="border rounded-lg overflow-x-auto">
+            <Table className="min-w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>Image</TableHead>
@@ -292,30 +269,19 @@ export default function ProductsPage() {
                             <img
                               src={product.image_url || "/placeholder.svg"}
                               alt={product.name}
-                              width={40}
-                              height={40}
-                              className="rounded-md object-cover"
+                              className="w-10 h-10 rounded-md object-cover"
                             />
                           ) : (
-                            <div className="bg-red-300 rounded-md w-12 h-12 justify-center flex">
-
-                            <CameraOffIcon className="w-8 h-8 text-red-500 m-auto" />
+                            <div className="bg-red-300 rounded-md w-12 h-12 flex justify-center items-center">
+                              <CameraOffIcon className="w-8 h-8 text-red-500" />
                             </div>
                           )}
                         </TableCell>
-                        <TableCell className="capitalize">
-                          {product.type}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {product.name}
-                        </TableCell>
+                        <TableCell className="capitalize">{product.type}</TableCell>
+                        <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{product.code}</TableCell>
-                        <TableCell className="capitalize">
-                          {product.category}
-                        </TableCell>
-                        <TableCell className="capitalize">
-                          {product.brand || "N/D"}
-                        </TableCell>
+                        <TableCell className="capitalize">{product.category}</TableCell>
+                        <TableCell className="capitalize">{product.brand || "N/D"}</TableCell>
                         <TableCell>${product.cost.toFixed(2)}</TableCell>
                         <TableCell>${product.price.toFixed(2)}</TableCell>
                         <TableCell>
@@ -338,9 +304,7 @@ export default function ProductsPage() {
                                 <Eye className="w-4 h-4 mr-2" />
                                 View
                               </DropdownMenuItem>
-                              <Link
-                                href={`/products/all-products/${product.id}/edit`}
-                              >
+                              <Link href={`/products/all-products/${product.id}/edit`}>
                                 <DropdownMenuItem>
                                   <Edit className="w-4 h-4 mr-2" />
                                   Edit
@@ -366,7 +330,7 @@ export default function ProductsPage() {
             </Table>
           </div>
 
-          <div className="flex justify-between items-center mt-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
             <div className="text-sm text-gray-600">
               Showing 1 to {products.length} of {products.length} entries
             </div>
@@ -377,7 +341,6 @@ export default function ProductsPage() {
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                 1
               </Button>
-
               <Button variant="outline" size="sm" className="border-gray-300">
                 Next
               </Button>
@@ -386,15 +349,13 @@ export default function ProductsPage() {
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              product "{productToDelete?.name}" and remove all associated data
-              from our servers.
+              This will permanently delete the product "{productToDelete?.name}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -410,14 +371,12 @@ export default function ProductsPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* View Product Dialog */}
+      {/* View Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Product Details</DialogTitle>
-            <DialogDescription>
-              View complete product information
-            </DialogDescription>
+            <DialogDescription>Complete product info</DialogDescription>
           </DialogHeader>
           {productToView && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -425,19 +384,15 @@ export default function ProductsPage() {
                 {productToView.image_url && (
                   <div className="flex justify-center">
                     <img
-                      src={productToView.image_url || "/placeholder.svg"}
+                      src={productToView.image_url}
                       alt={productToView.name}
                       className="w-48 h-48 object-cover rounded-lg"
                     />
                   </div>
                 )}
                 <div>
-                  <h3 className="font-semibold text-lg">
-                    {productToView.name}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Code: {productToView.code}
-                  </p>
+                  <h3 className="font-semibold text-lg">{productToView.name}</h3>
+                  <p className="text-sm text-gray-600">Code: {productToView.code}</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -445,9 +400,7 @@ export default function ProductsPage() {
                   <span className="font-medium">Category:</span>
                   <span className="capitalize">{productToView.category}</span>
                   <span className="font-medium">Brand:</span>
-                  <span className="capitalize">
-                    {productToView.brand || "N/A"}
-                  </span>
+                  <span className="capitalize">{productToView.brand || "N/A"}</span>
                   <span className="font-medium">Type:</span>
                   <span className="capitalize">{productToView.type}</span>
                   <span className="font-medium">Cost:</span>
@@ -455,14 +408,10 @@ export default function ProductsPage() {
                   <span className="font-medium">Price:</span>
                   <span>${productToView.price.toFixed(2)}</span>
                   <span className="font-medium">Stock:</span>
-                  <span>
-                    {productToView.current_stock} {productToView.unit_sale}
-                  </span>
+                  <span>{productToView.current_stock} {productToView.unit_sale}</span>
                   <span className="font-medium">Tax:</span>
-                  <span>
-                    {productToView.order_tax}% ({productToView.tax_method})
-                  </span>
-                  <span className="font-medium">Min. Quantity:</span>
+                  <span>{productToView.order_tax}% ({productToView.tax_method})</span>
+                  <span className="font-medium">Min Qty:</span>
                   <span>{productToView.minimum_quantity}</span>
                   <span className="font-medium">Stock Alert:</span>
                   <span>{productToView.stock_alert}</span>
@@ -472,18 +421,14 @@ export default function ProductsPage() {
                 {productToView.details && (
                   <div>
                     <span className="font-medium">Details:</span>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {productToView.details}
-                    </p>
+                    <p className="text-sm text-gray-600 mt-1">{productToView.details}</p>
                   </div>
                 )}
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
-              Close
-            </Button>
+            <Button variant="outline" onClick={() => setViewDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
