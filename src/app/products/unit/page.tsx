@@ -210,7 +210,8 @@ export default function UnitsPage() {
       </div>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-end">
+          {/* Create Button Section */}
+          <div className="flex justify-end mb-4">
             <Dialog
               open={isCreateDialogOpen}
               onOpenChange={setIsCreateDialogOpen}
@@ -236,6 +237,7 @@ export default function UnitsPage() {
                         setFormData({ ...formData, name: e.target.value })
                       }
                       required
+                      className="w-full"
                     />
                   </div>
                   <div>
@@ -248,6 +250,7 @@ export default function UnitsPage() {
                         setFormData({ ...formData, short_name: e.target.value })
                       }
                       required
+                      className="w-full"
                     />
                   </div>
                   <div>
@@ -258,7 +261,7 @@ export default function UnitsPage() {
                         setFormData({ ...formData, base_unit: value })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Choose Base Unit" />
                       </SelectTrigger>
                       <SelectContent>
@@ -281,7 +284,7 @@ export default function UnitsPage() {
                             setFormData({ ...formData, operator: value })
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -304,6 +307,7 @@ export default function UnitsPage() {
                                 Number.parseFloat(e.target.value) || 1.0,
                             })
                           }
+                          className="w-full"
                         />
                       </div>
                     </>
@@ -315,12 +319,12 @@ export default function UnitsPage() {
               </DialogContent>
             </Dialog>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+
+          {/* Controls and Search Section */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between mb-4 gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto">
               <Select defaultValue="10">
-                <SelectTrigger className="w-20">
+                <SelectTrigger className="w-full sm:w-20">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -332,7 +336,11 @@ export default function UnitsPage() {
               </Select>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto"
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     EXPORT
                   </Button>
@@ -344,85 +352,79 @@ export default function UnitsPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="relative">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-64"
+                className="pl-10 w-full"
               />
             </div>
           </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Short Name</TableHead>
-                <TableHead>Base Unit</TableHead>
-                <TableHead>Operator</TableHead>
-                <TableHead>Operation Value</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUnits.map((unit) => (
-                <TableRow key={unit.id}>
-                  <TableCell>{unit.name}</TableCell>
-                  <TableCell>{unit.short_name}</TableCell>
-                  <TableCell>{unit.base_unit || "-"}</TableCell>
-                  <TableCell>{unit.operator}</TableCell>
-                  <TableCell>{unit.operation_value}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Edit
-                        className="w-4 h-4 text-green-600 cursor-pointer"
-                        onClick={() => openEditDialog(unit)}
-                      />
-                      <X
-                        className="w-4 h-4 text-red-600 cursor-pointer"
-                        onClick={() => openDeleteDialog(unit)}
-                      />
-                    </div>
-                  </TableCell>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[120px]">Name</TableHead>
+                  <TableHead className="min-w-[120px]">Short Name</TableHead>
+                  <TableHead className="min-w-[120px]">Base Unit</TableHead>
+                  <TableHead className="min-w-[100px]">Operator</TableHead>
+                  <TableHead className="min-w-[150px]">
+                    Operation Value
+                  </TableHead>
+                  <TableHead className="min-w-[80px]">Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredUnits.map((unit) => (
+                  <TableRow key={unit.id}>
+                    <TableCell>{unit.name}</TableCell>
+                    <TableCell>{unit.short_name}</TableCell>
+                    <TableCell>{unit.base_unit || "-"}</TableCell>
+                    <TableCell>{unit.operator}</TableCell>
+                    <TableCell>{unit.operation_value}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Edit
+                          className="w-4 h-4 text-green-600 cursor-pointer"
+                          onClick={() => openEditDialog(unit)}
+                        />
+                        <X
+                          className="w-4 h-4 text-red-600 cursor-pointer"
+                          onClick={() => openDeleteDialog(unit)}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           {filteredUnits.length === 0 && (
             <div className="text-center py-8 text-gray-500">No units found</div>
           )}
 
-          <div className="flex justify-between items-center mt-6">
-                      <div className="text-sm text-gray-600">
-                        Showing 1 to {units.length} of {units.length} entries
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-gray-300"
-                        >
-                          Previous
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          1
-                        </Button>
-                       
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-gray-300"
-                          >
-                            Next
-                          </Button>
-                      </div>
-                    </div>
+          {/* Pagination Section */}
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
+            <div className="text-sm text-gray-600">
+              Showing 1 to {units.length} of {units.length} entries
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="border-gray-300">
+                Previous
+              </Button>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                1
+              </Button>
+              <Button variant="outline" size="sm" className="border-gray-300">
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -443,6 +445,7 @@ export default function UnitsPage() {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 required
+                className="w-full"
               />
             </div>
             <div>
@@ -455,6 +458,7 @@ export default function UnitsPage() {
                   setFormData({ ...formData, short_name: e.target.value })
                 }
                 required
+                className="w-full"
               />
             </div>
             <div>
@@ -465,7 +469,7 @@ export default function UnitsPage() {
                   setFormData({ ...formData, base_unit: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Choose Base Unit" />
                 </SelectTrigger>
                 <SelectContent>
@@ -490,7 +494,7 @@ export default function UnitsPage() {
                       setFormData({ ...formData, operator: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -513,6 +517,7 @@ export default function UnitsPage() {
                           Number.parseFloat(e.target.value) || 1.0,
                       })
                     }
+                    className="w-full"
                   />
                 </div>
               </>
@@ -531,8 +536,10 @@ export default function UnitsPage() {
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Are you sure you want to delete the unit "{unitToDelete?.name}" (
-              {unitToDelete?.short_name})?
+              Are you sure you want to delete the unit "
+              <span className="font-semibold">{unitToDelete?.name}</span>" (
+              <span className="font-semibold">{unitToDelete?.short_name}</span>
+              )?
             </p>
             <p className="text-sm text-red-600 font-medium">
               This action cannot be undone.
