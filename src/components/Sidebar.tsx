@@ -1,7 +1,12 @@
-"use client"
+"use client";
 
-import type * as React from "react"
-import { ChevronRight, LucideLayoutDashboard, ShoppingBagIcon, ShoppingCart } from "lucide-react"
+import type * as React from "react";
+import {
+  ChevronRight,
+  LucideLayoutDashboard,
+  ShoppingBagIcon,
+  ShoppingCart,
+} from "lucide-react";
 import {
   FaUser,
   FaExchangeAlt,
@@ -10,14 +15,18 @@ import {
   FaCashRegister,
   FaCog,
   FaFileAlt,
-} from "react-icons/fa"
-import { MdOutlineManageAccounts } from "react-icons/md"
-import { BsBoxSeam, BsPeople } from "react-icons/bs"
-import { HiOutlineAdjustments } from "react-icons/hi"
-import Image from "next/image"
-import Link from "next/link"
+} from "react-icons/fa";
+import { MdOutlineManageAccounts } from "react-icons/md";
+import { BsBoxSeam, BsPeople } from "react-icons/bs";
+import { HiOutlineAdjustments } from "react-icons/hi";
+import Image from "next/image";
+import Link from "next/link";
 
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -31,10 +40,14 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const menuItems = [
-  { icon: <LucideLayoutDashboard size={18} />, label: "Dashboard", href: "/dashboard" },
+  {
+    icon: <LucideLayoutDashboard size={18} />,
+    label: "Dashboard",
+    href: "/dashboard",
+  },
   {
     icon: <MdOutlineManageAccounts size={18} />,
     label: "Users Management",
@@ -57,7 +70,6 @@ const menuItems = [
     submenu: [
       { label: "All Products", href: "/products/all-products" },
       { label: "Create product", href: "/products/create-product" },
-      { label: "Print Labels", href: "/products/print-labels" },
       { label: "Category", href: "/products/category" },
       { label: "Unit", href: "/products/unit" },
       { label: "Brand", href: "/products/brand" },
@@ -129,7 +141,7 @@ const menuItems = [
       { label: "Backup", href: "/settings/backup" },
     ],
   },
-]
+];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -137,14 +149,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader className="pb-4 bg-[#273043]">
         <div className="flex items-center px-2">
           <Link href="/">
-          <Image
-            src="https://posly.getstocky.com/images/logo-default.svg"
-            alt="Posly Logo"
-            width={100}
-            height={40}
-            className="h-10 w-auto"
+            <Image
+              src="https://posly.getstocky.com/images/logo-default.svg"
+              alt="Posly Logo"
+              width={100}
+              height={40}
+              className="h-10 w-auto"
             />
-            </Link>
+          </Link>
         </div>
       </SidebarHeader>
       <SidebarContent className="bg-[#273043]">
@@ -158,7 +170,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton className="w-full h-12 bg-[#273043] hover:bg-[#364152] hover:text-blue-400 text-white">
                           <span className="mr-3 opacity-80">{item.icon}</span>
-                          <span className="flex-1 text-[15px]">{item.label}</span>
+                          <span className="flex-1 text-[15px]">
+                            {item.label}
+                          </span>
                           <ChevronRight className="ml-auto h-4 w-4 opacity-60 transition-transform group-data-[state=open]/collapsible:rotate-90" />
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
@@ -198,5 +212,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  )
-}
+  );
+};
