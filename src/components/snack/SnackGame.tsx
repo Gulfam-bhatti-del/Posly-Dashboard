@@ -107,7 +107,7 @@ const Home: React.FC = () => {
                 // If current direction is not 'up' (dr === -1), allow changing to 'down'
                 if (dr !== -1) setDirection([1, 0]);
                 break;
-            case 'ArrowLeft':
+            case '':
                 // If current direction is not 'right' (dc === 1), allow changing to 'left'
                 if (dc !== 1) setDirection([0, -1]);
                 break;
