@@ -89,7 +89,7 @@ interface Permission {
   updated_at: string;
 }
 
-// Permission service functions
+// Permission service functions (assuming these are correctly implemented and accessible)
 const getPermissions = async () => {
   const { data, error } = await supabase
     .from("permissions")
@@ -279,7 +279,8 @@ export default function PermissionsPage() {
     setFormData({
       role_name: permission.role_name,
       description: permission.description,
-      permissions: permission.permissions,
+      // Deep copy permissions object to avoid direct state mutation
+      permissions: JSON.parse(JSON.stringify(permission.permissions)),
       is_default: permission.is_default,
     });
     setIsEditOpen(true);
@@ -321,11 +322,17 @@ export default function PermissionsPage() {
   const totalPages = Math.ceil(filteredPermissions.length / pageSize);
 
   const PermissionCard = ({ permission }: { permission: Permission }) => (
-    <Card className="mb-4">
+    <Card className="mb-4 shadow-sm">
+      {" "}
+      {/* Added shadow */}
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+          <div className="flex items-center space-x-3 flex-grow min-w-0">
+            {" "}
+            {/* flex-grow and min-w-0 for text truncation */}
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+              {" "}
+              {/* flex-shrink-0 to keep icon size */}
               <Shield className="w-5 h-5 text-blue-600" />
             </div>
             <div className="flex-1 min-w-0">
@@ -335,7 +342,9 @@ export default function PermissionsPage() {
               <p className="text-sm text-gray-600 truncate">
                 {permission.description}
               </p>
-              <div className="flex items-center space-x-2 mt-1">
+              <div className="flex flex-wrap items-center gap-x-2 mt-1">
+                {" "}
+                {/* flex-wrap for badges */}
                 {permission.is_default && (
                   <Badge
                     variant="secondary"
@@ -354,7 +363,13 @@ export default function PermissionsPage() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 flex-shrink-0"
+              >
+                {" "}
+                {/* flex-shrink-0 for button */}
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -381,12 +396,15 @@ export default function PermissionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+        {" "}
+        {/* Responsive padding */}
         <div className="max-w-7xl mx-auto">
           <Card>
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                <Skeleton className="h-6 w-24 sm:h-8 sm:w-32" />
+                <Skeleton className="h-6 w-24 sm:h-8 sm:w-32" />{" "}
+                {/* Adjusted skeleton widths */}
                 <Skeleton className="h-8 w-20 sm:h-10 sm:w-24" />
               </div>
             </CardHeader>
@@ -394,8 +412,9 @@ export default function PermissionsPage() {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                   <div className="flex items-center space-x-2 sm:space-x-4">
-                    <Skeleton className="h-8 w-12 sm:h-10 sm:w-16" />
-                    <Skeleton className="h-8 w-20 sm:h-10 sm:w-24" />
+                    <Skeleton className="h-8 w-16 sm:h-10 sm:w-20" />{" "}
+                    {/* Adjusted skeleton widths */}
+                    <Skeleton className="h-8 w-24 sm:h-10 sm:w-32" />
                   </div>
                   <Skeleton className="h-8 w-full sm:h-10 sm:w-64" />
                 </div>
@@ -403,14 +422,16 @@ export default function PermissionsPage() {
                 <div className="space-y-3">
                   {Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex items-center space-x-4">
-                      <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-full" />
+                      <Skeleton className="h-10 w-10 rounded-full" />{" "}
+                      {/* Larger icon skeleton */}
                       <div className="flex-1 space-y-2">
-                        <Skeleton className="h-3 w-24 sm:h-4 sm:w-32" />
-                        <Skeleton className="h-3 w-48 sm:h-4 sm:w-64" />
+                        <Skeleton className="h-4 w-32 sm:w-48" />{" "}
+                        {/* Adjusted text skeleton widths */}
+                        <Skeleton className="h-4 w-48 sm:w-64" />
                       </div>
-                      <div className="flex space-x-1 sm:space-x-2">
-                        <Skeleton className="h-6 w-6 sm:h-8 sm:w-8" />
-                        <Skeleton className="h-6 w-6 sm:h-8 sm:w-8" />
+                      <div className="flex space-x-2">
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8" />
                       </div>
                     </div>
                   ))}
@@ -424,30 +445,38 @@ export default function PermissionsPage() {
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-6">
-      <div className="mb-6 -mt-4">
-        <h1 className="text-xl sm:text-2xl text-gray-900 mb-3">Permissions</h1>
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+      {" "}
+      {/* Responsive padding for overall page */}
+      <ToastContainer position="top-center" />
+      <div className="mb-6 -mt-2 sm:-mt-3">
+        {" "}
+        {/* Adjusted margin-top for smaller screens */}
+        <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">
+          Permissions
+        </h1>
         <Separator />
       </div>
       <div className="max-w-7xl mx-auto">
         <Card>
+          {/* Header */}
           <CardHeader className="pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end space-y-3 sm:space-y-0">
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
-                    className="border -mb-5 border-blue-700 hover:bg-blue-700 hover:text-white w-full sm:w-auto cursor-pointer"
+                    className="border -mb-5 sm:-mb-4 border-blue-700 hover:bg-blue-700 hover:text-white w-full sm:w-auto cursor-pointer"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Create
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[95vw] max-w-3xl max-h-[95vh] sm:max-h-[90vh]">
+                <DialogContent className="w-[95vw] max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
                   <DialogHeader>
                     <DialogTitle>Create Permission</DialogTitle>
                   </DialogHeader>
-                  <ScrollArea className="max-h-[60vh] sm:max-h-[70vh] pr-4">
+                  <ScrollArea className="flex-1 pr-4">
                     <form
                       onSubmit={handleCreatePermission}
                       className="space-y-6"
@@ -646,7 +675,9 @@ export default function PermissionsPage() {
                       </div>
                     </form>
                   </ScrollArea>
-                  <DialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0">
+                  <DialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0 mt-4">
+                    {" "}
+                    {/* Adjusted margin-top */}
                     <Button
                       type="button"
                       variant="outline"
@@ -679,13 +710,13 @@ export default function PermissionsPage() {
           <CardContent>
             {/* Controls */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 mb-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                 <div className="flex items-center space-x-2">
                   <Select
                     value={pageSize.toString()}
                     onValueChange={(value) => setPageSize(Number(value))}
                   >
-                    <SelectTrigger className="w-16 sm:w-20">
+                    <SelectTrigger className="w-full md:px-3 pr-8 sm:w-20">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -696,7 +727,11 @@ export default function PermissionsPage() {
                   </Select>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto sm:inline-flex"
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         EXPORT
                       </Button>
@@ -715,7 +750,7 @@ export default function PermissionsPage() {
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 w-full"
                 />
               </div>
             </div>
@@ -723,54 +758,75 @@ export default function PermissionsPage() {
             <Separator className="mb-6" />
 
             {/* Desktop Table View */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:block overflow-x-auto">
+              {" "}
+              {/* Added overflow-x-auto */}
               <div className="rounded-md border">
-                <Table>
+                <Table className="min-w-full">
+                  {" "}
+                  {/* Ensure table takes full width */}
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Role Name</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Action</TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Role Name
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Description
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Action
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedPermissions.map((permission) => (
-                      <TableRow key={permission.id}>
-                        <TableCell className="font-medium">
-                          {permission.role_name}
+                    {paginatedPermissions.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={3}
+                          className="text-center py-8 text-gray-500"
+                        >
+                          No permissions found.
                         </TableCell>
-                        <TableCell className="text-gray-600">
-                          {permission.description}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditDialog(permission)}
-                              className="text-blue-600 hover:text-blue-700"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            {!permission.is_default && (
+                      </TableRow>
+                    ) : (
+                      paginatedPermissions.map((permission) => (
+                        <TableRow key={permission.id}>
+                          <TableCell className="font-medium whitespace-nowrap">
+                            {permission.role_name}
+                          </TableCell>
+                          <TableCell className="text-gray-600 whitespace-nowrap">
+                            {permission.description}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center space-x-2">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => openDeleteDialog(permission)}
-                                className="text-red-600 hover:text-red-700"
+                                onClick={() => openEditDialog(permission)}
+                                className="text-blue-600 hover:text-blue-700"
                               >
-                                <Trash2 className="w-4 h-4" />
+                                <Edit className="w-4 h-4" />
                               </Button>
-                            )}
-                            {permission.is_default && (
-                              <span className="text-xs text-gray-500">
-                                Cannot change default permissions
-                              </span>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                              {!permission.is_default && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openDeleteDialog(permission)}
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                              {permission.is_default && (
+                                <span className="text-xs text-gray-500">
+                                  Cannot change default permissions
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -778,19 +834,29 @@ export default function PermissionsPage() {
 
             {/* Mobile Card View */}
             <div className="lg:hidden">
-              {paginatedPermissions.map((permission) => (
-                <PermissionCard key={permission.id} permission={permission} />
-              ))}
+              {paginatedPermissions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No permissions found.
+                </div>
+              ) : (
+                paginatedPermissions.map((permission) => (
+                  <PermissionCard key={permission.id} permission={permission} />
+                ))
+              )}
             </div>
 
             {/* Pagination */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 space-y-3 sm:space-y-0">
-              <p className="text-sm text-gray-600 text-center sm:text-left">
+              <p className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
+                {" "}
+                {/* Centered on small screens */}
                 Showing {(currentPage - 1) * pageSize + 1} to{" "}
                 {Math.min(currentPage * pageSize, filteredPermissions.length)}{" "}
                 of {filteredPermissions.length} entries
               </p>
-              <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+              <div className="flex items-center justify-center space-x-1 sm:space-x-2 w-full sm:w-auto">
+                {" "}
+                {/* Centered on small screens */}
                 <Button
                   variant="outline"
                   size="sm"
@@ -844,14 +910,13 @@ export default function PermissionsPage() {
           </CardContent>
         </Card>
       </div>
-
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="w-[95vw] max-w-3xl max-h-[95vh] sm:max-h-[90vh]">
+        <DialogContent className="w-[95vw] max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Edit Permission</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="max-h-[60vh] sm:max-h-[70vh] pr-4">
+          <ScrollArea className="flex-1 pr-4">
             <form onSubmit={handleEditPermission} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -1024,7 +1089,7 @@ export default function PermissionsPage() {
               </div>
             </form>
           </ScrollArea>
-          <DialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0">
+          <DialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0 mt-4">
             <Button
               type="button"
               variant="outline"
@@ -1051,7 +1116,6 @@ export default function PermissionsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       {/* Delete Dialog */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent className="w-[95vw] max-w-md">
@@ -1138,7 +1202,6 @@ export default function PermissionsPage() {
           )}
         </AlertDialogContent>
       </AlertDialog>
-
       <ToastContainer
         position="top-right"
         autoClose={3000}
