@@ -2,9 +2,11 @@
 
 import type React from "react";
 import { useState, useEffect } from "react";
+// Assuming createClient and supabase are correctly configured in your project
+// import { createClient } from "@supabase/supabase-js"; // This line might be redundant if supabase is imported from "@/lib/supabase"
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase"; // Assuming this is your configured supabase client
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,7 +80,7 @@ interface User {
   updated_at: string;
 }
 
-// User service functions
+// User service functions (assuming these are correctly implemented and accessible)
 const getUsers = async () => {
   const { data, error } = await supabase
     .from("users")
@@ -333,11 +335,11 @@ export default function UsersPage() {
 
   // Mobile User Card Component
   const UserCard = ({ user }: { user: User }) => (
-    <Card className="mb-4">
+    <Card className="mb-4 shadow-sm">
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
-            <Avatar className="h-12 w-12">
+          <div className="flex items-center space-x-3 flex-grow min-w-0">
+            <Avatar className="h-12 w-12 flex-shrink-0">
               <AvatarImage
                 src={user.avatar_url || "/placeholder.svg"}
                 alt={user.full_name}
@@ -351,7 +353,7 @@ export default function UsersPage() {
                 {user.full_name}
               </h3>
               <p className="text-sm text-gray-600 truncate">{user.email}</p>
-              <div className="flex items-center space-x-2 mt-1">
+              <div className="flex flex-wrap items-center gap-x-2 mt-1">
                 <Badge
                   variant={user.status === "Active" ? "default" : "secondary"}
                   className={`text-xs ${
@@ -368,7 +370,11 @@ export default function UsersPage() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 flex-shrink-0"
+              >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -393,12 +399,12 @@ export default function UsersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
           <Card>
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                <Skeleton className="h-6 w-16 sm:h-8 sm:w-20" />
+                <Skeleton className="h-6 w-24 sm:h-8 sm:w-32" />
                 <Skeleton className="h-8 w-20 sm:h-10 sm:w-24" />
               </div>
             </CardHeader>
@@ -406,8 +412,8 @@ export default function UsersPage() {
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
                   <div className="flex items-center space-x-2 sm:space-x-4">
-                    <Skeleton className="h-8 w-12 sm:h-10 sm:w-16" />
-                    <Skeleton className="h-8 w-20 sm:h-10 sm:w-24" />
+                    <Skeleton className="h-8 w-16 sm:h-10 sm:w-20" />
+                    <Skeleton className="h-8 w-24 sm:h-10 sm:w-32" />
                   </div>
                   <Skeleton className="h-8 w-full sm:h-10 sm:w-64" />
                 </div>
@@ -415,18 +421,18 @@ export default function UsersPage() {
                 <div className="space-y-3">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div key={i} className="flex items-center space-x-4">
-                      <Skeleton className="h-8 w-8 sm:h-10 sm:w-10 rounded-full" />
+                      <Skeleton className="h-12 w-12 rounded-full" />
                       <div className="flex-1 space-y-2">
-                        <Skeleton className="h-3 w-24 sm:h-4 sm:w-32" />
-                        <Skeleton className="h-3 w-32 sm:h-4 sm:w-48" />
+                        <Skeleton className="h-4 w-32 sm:w-48" />
+                        <Skeleton className="h-4 w-48 sm:w-64" />
                       </div>
                       <div className="hidden sm:flex space-x-2">
-                        <Skeleton className="h-6 w-12 sm:h-6 sm:w-16" />
-                        <Skeleton className="h-4 w-16 sm:h-4 sm:w-24" />
+                        <Skeleton className="h-6 w-16" />
+                        <Skeleton className="h-6 w-20" />
                       </div>
-                      <div className="flex space-x-1 sm:space-x-2">
-                        <Skeleton className="h-6 w-6 sm:h-8 sm:w-8" />
-                        <Skeleton className="h-6 w-6 sm:h-8 sm:w-8" />
+                      <div className="flex space-x-2">
+                        <Skeleton className="h-8 w-8" />
+                        <Skeleton className="h-8 w-8" />
                       </div>
                     </div>
                   ))}
@@ -440,10 +446,11 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="min-h-screen p-3 sm:p-6">
-      <div className="mb-6 -mt-3">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+      <ToastContainer position="top-center" />
+      <div className="mb-6 -mt-2 sm:-mt-3">
         <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">
-          User
+          Users
         </h1>
         <Separator />
       </div>
@@ -454,16 +461,19 @@ export default function UsersPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end space-y-3 sm:space-y-0">
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="border -mb-5 border-blue-700 hover:bg-blue-700 hover:text-white w-full sm:w-auto cursor-pointer">
+                  <Button
+                    variant="outline"
+                    className="border -mb-5 sm:-mb-4 border-blue-700 hover:bg-blue-700 hover:text-white w-full sm:w-auto cursor-pointer"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Create
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="w-[95vw] max-w-2xl max-h-[95vh] sm:max-h-[90vh]">
+                <DialogContent className="w-[95vw] max-w-xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
                   <DialogHeader>
                     <DialogTitle>Create User</DialogTitle>
                   </DialogHeader>
-                  <ScrollArea className="max-h-[60vh] sm:max-h-[70vh] pr-4">
+                  <ScrollArea className="flex-1 pr-4">
                     <form onSubmit={handleCreateUser} className="space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -544,7 +554,7 @@ export default function UsersPage() {
                               setFormData({ ...formData, status: value })
                             }
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -565,7 +575,7 @@ export default function UsersPage() {
                                 | "Manager"
                             ) => setFormData({ ...formData, role: value })}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                               <SelectValue placeholder="Choose role" />
                             </SelectTrigger>
                             <SelectContent>
@@ -616,7 +626,7 @@ export default function UsersPage() {
                           </div>
                           {!formData.all_warehouses && (
                             <Select>
-                              <SelectTrigger>
+                              <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Please Select" />
                               </SelectTrigger>
                               <SelectContent>
@@ -636,7 +646,7 @@ export default function UsersPage() {
                       </div>
                     </form>
                   </ScrollArea>
-                  <DialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0">
+                  <DialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0 mt-4">
                     <Button
                       type="button"
                       variant="outline"
@@ -669,13 +679,13 @@ export default function UsersPage() {
           <CardContent>
             {/* Controls */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 mb-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
                 <div className="flex items-center space-x-2">
                   <Select
                     value={pageSize.toString()}
                     onValueChange={(value) => setPageSize(Number(value))}
                   >
-                    <SelectTrigger className="w-16 sm:w-20">
+                    <SelectTrigger className="w-full md:px-3 pr-8 sm:w-20">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -686,7 +696,11 @@ export default function UsersPage() {
                   </Select>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto sm:inline-flex"
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         EXPORT
                       </Button>
@@ -697,13 +711,6 @@ export default function UsersPage() {
                       <DropdownMenuItem>Export as PDF</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="sm:hidden bg-transparent"
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
                 </div>
               </div>
               <div className="relative w-full sm:w-64">
@@ -712,7 +719,7 @@ export default function UsersPage() {
                   placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 w-full"
                 />
               </div>
             </div>
@@ -720,86 +727,109 @@ export default function UsersPage() {
             <Separator className="mb-6" />
 
             {/* Desktop Table View */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:block overflow-x-auto">
               <div className="rounded-md border">
-                <Table>
+                <Table className="min-w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Avatar</TableHead>
-                      <TableHead>Username</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead className="hidden xl:table-cell">
+                      <TableHead className="whitespace-nowrap">
+                        Avatar
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Username
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap">Email</TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Status
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap">Role</TableHead>
+                      <TableHead className="hidden xl:table-cell whitespace-nowrap">
                         Assign Role
                       </TableHead>
-                      <TableHead>Action</TableHead>
+                      <TableHead className="whitespace-nowrap">
+                        Action
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <Avatar>
-                            <AvatarImage
-                              className="w-8 h-8"
-                              src={user.avatar_url || "/placeholder.svg"}
-                              alt={user.full_name}
-                            />
-                            <AvatarFallback>
-                              <UserIcon className="w-8 h-8" />
-                            </AvatarFallback>
-                          </Avatar>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {user.full_name}
-                        </TableCell>
-                        <TableCell className="text-gray-600">
-                          {user.email}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              user.status === "Active" ? "default" : "secondary"
-                            }
-                            className={
-                              user.status === "Active"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
-                            }
-                          >
-                            {user.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{user.role}</TableCell>
-                        <TableCell className="text-gray-500 text-sm hidden xl:table-cell">
-                          {user.role === "Super Admin"
-                            ? "Cannot change default permissions"
-                            : "Can assign roles"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                            title="edit"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditDialog(user)}
-                              className="text-blue-600 hover:text-blue-700 cursor-pointer"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openDeleteDialog(user)}
-                              className="text-red-600 hover:text-red-700 cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                    {paginatedUsers.length === 0 ? (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="text-center py-8 text-gray-500"
+                        >
+                          No users found.
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      paginatedUsers.map((user) => (
+                        <TableRow key={user.id}>
+                          <TableCell className="flex-shrink-0">
+                            <Avatar>
+                              <AvatarImage
+                                className="w-8 h-8"
+                                src={user.avatar_url || "/placeholder.svg"}
+                                alt={user.full_name}
+                              />
+                              <AvatarFallback>
+                                <UserIcon className="w-8 h-8" />
+                              </AvatarFallback>
+                            </Avatar>
+                          </TableCell>
+                          <TableCell className="font-medium whitespace-nowrap">
+                            {user.full_name}
+                          </TableCell>
+                          <TableCell className="text-gray-600 whitespace-nowrap">
+                            {user.email}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                user.status === "Active"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                              className={
+                                user.status === "Active"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }
+                            >
+                              {user.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {user.role}
+                          </TableCell>
+                          <TableCell className="text-gray-500 text-sm hidden xl:table-cell whitespace-nowrap">
+                            {user.role === "Super Admin"
+                              ? "Cannot change default permissions"
+                              : "Can assign roles"}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                title="edit"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditDialog(user)}
+                                className="text-blue-600 hover:text-blue-700 cursor-pointer"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openDeleteDialog(user)}
+                                className="text-red-600 hover:text-red-700 cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -807,19 +837,25 @@ export default function UsersPage() {
 
             {/* Mobile Card View */}
             <div className="lg:hidden">
-              {paginatedUsers.map((user) => (
-                <UserCard key={user.id} user={user} />
-              ))}
+              {paginatedUsers.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No users found.
+                </div>
+              ) : (
+                paginatedUsers.map((user) => (
+                  <UserCard key={user.id} user={user} />
+                ))
+              )}
             </div>
 
             {/* Pagination */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 space-y-3 sm:space-y-0">
-              <p className="text-sm text-gray-600 text-center sm:text-left">
+              <p className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
                 Showing {(currentPage - 1) * pageSize + 1} to{" "}
                 {Math.min(currentPage * pageSize, filteredUsers.length)} of{" "}
                 {filteredUsers.length} entries
               </p>
-              <div className="flex items-center justify-center space-x-1 sm:space-x-2">
+              <div className="flex items-center justify-center space-x-1 sm:space-x-2 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
@@ -874,13 +910,13 @@ export default function UsersPage() {
         </Card>
       </div>
 
-      {/* Edit Dialog */}
+      {/* Edit User Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="w-[95vw] max-w-2xl max-h-[95vh] sm:max-h-[90vh]">
+        <DialogContent className="w-[95vw] max-w-xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
           </DialogHeader>
-          <ScrollArea className="max-h-[60vh] sm:max-h-[70vh] pr-4">
+          <ScrollArea className="flex-1 pr-4">
             <form onSubmit={handleEditUser} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -911,6 +947,35 @@ export default function UsersPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
+                  <Label htmlFor="edit_password">Password</Label>
+                  <Input
+                    id="edit_password"
+                    type="password"
+                    placeholder="Leave blank to keep current password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit_repeat_password">Repeat password</Label>
+                  <Input
+                    id="edit_repeat_password"
+                    type="password"
+                    placeholder="Repeat password"
+                    value={formData.repeat_password}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        repeat_password: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <Label htmlFor="edit_status">Status *</Label>
                   <Select
                     value={formData.status}
@@ -918,7 +983,7 @@ export default function UsersPage() {
                       setFormData({ ...formData, status: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -935,8 +1000,8 @@ export default function UsersPage() {
                       value: "Super Admin" | "Admin" | "User" | "Manager"
                     ) => setFormData({ ...formData, role: value })}
                   >
-                    <SelectTrigger>
-                      <SelectValue />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose role" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Super Admin">Super Admin</SelectItem>
@@ -982,7 +1047,7 @@ export default function UsersPage() {
                   </div>
                   {!formData.all_warehouses && (
                     <Select>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Please Select" />
                       </SelectTrigger>
                       <SelectContent>
@@ -996,7 +1061,7 @@ export default function UsersPage() {
               </div>
             </form>
           </ScrollArea>
-          <DialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0">
+          <DialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0 mt-4">
             <Button
               type="button"
               variant="outline"
@@ -1017,111 +1082,45 @@ export default function UsersPage() {
                   Updating...
                 </>
               ) : (
-                "Update User"
+                "Update"
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Dialog */}
+      {/* Delete User AlertDialog */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent className="w-[95vw] max-w-md">
-          {deleteLoading ? (
-            <div className="flex flex-col items-center justify-center py-6 sm:py-8">
-              <div className="relative">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-red-200 rounded-full animate-spin border-t-red-600"></div>
-                <div className="absolute inset-0 w-12 h-12 sm:w-16 sm:h-16 border-4 border-transparent rounded-full animate-ping border-t-red-400"></div>
-              </div>
-              <div className="mt-4 sm:mt-6 space-y-2 text-center">
-                <div className="flex justify-center space-x-1">
-                  <div className="w-2 h-2 bg-red-600 rounded-full animate-bounce"></div>
-                  <div
-                    className="w-2 h-2 bg-red-600 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-red-600 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
-                </div>
-                <p className="text-base sm:text-lg font-medium text-gray-900">
-                  Deleting User...
-                </p>
-                <p className="text-xs sm:text-sm text-gray-500 px-4">
-                  Please wait while we remove {selectedUser?.full_name}
-                </p>
-              </div>
-              <div className="mt-4 sm:mt-6 w-48 sm:w-64">
-                <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
-                  <div className="bg-gradient-to-r from-red-400 to-red-600 h-full rounded-full animate-pulse"></div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <AlertDialogHeader>
-                <AlertDialogTitle className="flex items-center space-x-2">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 bg-red-100 rounded-full flex items-center justify-center">
-                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
-                  </div>
-                  <span className="text-base sm:text-lg">Delete User</span>
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-sm sm:text-base">
-                  Are you sure you want to delete{" "}
-                  <strong className="text-gray-900">
-                    {selectedUser?.full_name}
-                  </strong>
-                  ?
-                  <br />
-                  <span className="text-red-600 font-medium">
-                    This action cannot be undone.
-                  </span>
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0">
-                <AlertDialogCancel
-                  disabled={deleteLoading}
-                  className="w-full sm:w-auto"
-                >
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDeleteUser}
-                  disabled={deleteLoading}
-                  className="bg-red-600 hover:bg-red-700 focus:ring-red-500 w-full sm:w-auto"
-                >
-                  {deleteLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete User
-                    </>
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </>
-          )}
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              user{" "}
+              <span className="font-semibold">{selectedUser?.full_name}</span>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row space-y-2 sm:space-y-0">
+            <AlertDialogCancel className="w-full sm:w-auto">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={deleteLoading}
+              className="bg-red-600 hover:bg-red-700 w-full sm:w-auto"
+            >
+              {deleteLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        className="mt-16 sm:mt-0"
-      />
     </div>
   );
 }
