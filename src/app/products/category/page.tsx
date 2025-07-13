@@ -168,18 +168,32 @@ function Category() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="-mt-3">
-        <h1 className="text-2xl">Category</h1>
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      {" "}
+      {/* Responsive padding */}
+      <div className="mb-6 -mt-2 sm:-mt-3">
+        {" "}
+        {/* Adjusted margin-top for smaller screens */}
+        <h1 className="text-2xl md:text-3xl">Category</h1>{" "}
+        {/* Larger heading on medium screens */}
         <Separator className="my-4" />
       </div>
-      <Card className="p-4 mb-6">
-        <CardHeader>
-          <div className="flex items-center justify-end mb-6">
+      <Card className="p-4 sm:p-6">
+        {" "}
+        {/* Responsive padding for card */}
+        <CardHeader className="p-0 mb-4 sm:mb-6">
+          {" "}
+          {/* Adjusted padding and margin */}
+          <div className="flex justify-end mb-4">
+            {" "}
+            {/* Simplified this flex */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" className="-mb-4">
-                  <Plus /> Create
+                <Button variant="outline" className="-mt-2 sm:-mb-4">
+                  {" "}
+                  {/* Adjusted margin-top for button */}
+                  <Plus className="w-4 h-4 mr-2" /> Create{" "}
+                  {/* Added mr-2 for icon spacing */}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
@@ -235,9 +249,13 @@ function Category() {
                       </div>
                     )}
                   </div>
-                  <DialogFooter className="float-left">
+                  <DialogFooter className="flex justify-end w-full">
+                    {" "}
+                    {/* Aligned to end */}
                     <Button type="submit" disabled={loading}>
-                      {loading && <Loader2 className="animate-spin w-4 h-4" />}
+                      {loading && (
+                        <Loader2 className="animate-spin w-4 h-4 mr-2" />
+                      )}
                       {loading ? "Submitting..." : "Submit"}
                     </Button>
                   </DialogFooter>
@@ -245,11 +263,13 @@ function Category() {
               </DialogContent>
             </Dialog>
           </div>
-
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+            {/* Added responsiveness: stack on small screens, row on sm+ */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+              {/* Added responsiveness: stack on small screens, row on sm+ */}
               <Select value={pageSize} onValueChange={setPageSize}>
-                <SelectTrigger className="w-20">
+                <SelectTrigger className="w-full sm:w-20">
+                  {/* Adjusted width for small screens */}
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -259,10 +279,13 @@ function Category() {
                   <SelectItem value="100">100</SelectItem>
                 </SelectContent>
               </Select>
-
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto" /* Adjusted width for small screens */
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     EXPORT
                   </Button>
@@ -274,68 +297,101 @@ function Category() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-
-            <div className="relative w-64">
+            <div className="relative w-full sm:w-64">
+              {/* Adjusted width for small screens */}
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input placeholder="Search..." className="pl-10" />
+              <Input placeholder="Search..." className="pl-10 w-full" />{" "}
+              {/* Ensured input takes full width */}
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <Table className="w-full">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {showCategories.map((c) => (
-                <TableRow key={c.code}>
-                  <TableCell className="font-medium">{c.code}</TableCell>
-                  <TableCell>{c.name}</TableCell>
-                  <TableCell className="flex">
-                    <Pencil
-                      className="w-4 h-4 text-blue-500 cursor-pointer"
-                      onClick={() => {
-                        setCategoryToUpdate({ code: c.code, name: c.name });
-                        setUpdateCategoryCode(c.code);
-                        setUpdateCategoryName(c.name);
-                        setUpdateDialogOpen(true);
-                      }}
-                    />
-                    <X
-                      className="w-4 h-4 text-red-500 cursor-pointer ml-2"
-                      onClick={() => {
-                        setCategoryToDelete({ code: c.code, name: c.name });
-                        setDeleteDialogOpen(true);
-                      }}
-                    />
-                  </TableCell>
+          <div className="overflow-x-auto border rounded-lg">
+            {/* Added border and rounded corners */}
+            <Table className="w-full min-w-[400px]">
+              {/* Added min-width for better table behavior on small screens */}
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="whitespace-nowrap">Code</TableHead>
+                  <TableHead className="whitespace-nowrap">Name</TableHead>
+                  <TableHead className="whitespace-nowrap">Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {showCategories.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={3}
+                      className="text-center py-8 text-gray-500"
+                    >
+                      No categories found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  showCategories
+                    .slice(0, Number.parseInt(pageSize))
+                    .map((c) => (
+                      <TableRow key={c.code}>
+                        <TableCell className="font-medium whitespace-nowrap">
+                          {c.code}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {c.name}
+                        </TableCell>
+                        <TableCell className="flex items-center gap-2 whitespace-nowrap">
+                          {" "}
+                          {/* Aligned icons and added gap */}
+                          <Pencil
+                            className="w-4 h-4 text-blue-500 cursor-pointer"
+                            onClick={() => {
+                              setCategoryToUpdate({
+                                code: c.code,
+                                name: c.name,
+                              });
+                              setUpdateCategoryCode(c.code);
+                              setUpdateCategoryName(c.name);
+                              setUpdateDialogOpen(true);
+                            }}
+                          />
+                          <X
+                            className="w-4 h-4 text-red-500 cursor-pointer"
+                            onClick={() => {
+                              setCategoryToDelete({
+                                code: c.code,
+                                name: c.name,
+                              });
+                              setDeleteDialogOpen(true);
+                            }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-          {showCategories.length === 0 && (
-            <div className="text-center py-8 text-gray-500">No categories found</div>
-          )}
-
-         {/* Pagination */}
-          <div className="flex justify-between items-center mt-6">
-            <div className="text-sm text-gray-600">
-              Showing 1 to {showCategories.length} of {showCategories.length}{" "}
-              entries
+          {/* Pagination */}
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
+            {/* Added responsiveness: stack on small screens, row on sm+ */}
+            <div className="text-sm text-gray-600 text-center sm:text-left w-full sm:w-auto">
+              {" "}
+              {/* Centered on small screens */}
+              Showing 1 to{" "}
+              {Math.min(
+                showCategories.length,
+                Number.parseInt(pageSize)
+              )} of {showCategories.length} entries
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 justify-center sm:justify-end w-full sm:w-auto">
+              {" "}
+              {/* Centered on small screens */}
               <Button variant="outline" size="sm" className="border-gray-300">
                 Previous
               </Button>
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                 1
               </Button>
-
               <Button variant="outline" size="sm" className="border-gray-300">
                 Next
               </Button>
@@ -343,25 +399,32 @@ function Category() {
           </div>
         </CardContent>
       </Card>
-
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="max-w-md rounded-2xl shadow-2xl border-0 bg-gradient-to-br from-white via-red-50 to-red-100">
-          <DialogHeader>
-            <DialogTitle className="text-2xl flex items-center gap-2" />
+        <DialogContent className="max-w-md rounded-2xl shadow-2xl border-0 bg-gradient-to-br from-white via-red-50 to-red-100 p-6">
+          {" "}
+          {/* Adjusted padding */}
+          <DialogHeader className="hidden">
+            {" "}
+            {/* Hidden as content provides title */}
+            <DialogTitle />
           </DialogHeader>
           <div className="flex flex-col items-center py-6">
             <AlertTriangle className="w-16 h-16 text-orange-400 mb-4" />
-            <h2 className="text-2xl font-bold mb-2 text-gray-800">
-              Are you sure ?
+            <h2 className="text-2xl font-bold mb-2 text-gray-800 text-center">
+              {" "}
+              {/* Centered text */}
+              Are you sure?
             </h2>
             <p className="text-gray-500 mb-6 text-center">
               You won't be able to revert this!
             </p>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+              {" "}
+              {/* Stack buttons on small screens, justify center */}
               <Button
                 variant="destructive"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6"
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6"
                 disabled={loading}
                 onClick={async () => {
                   if (categoryToDelete) {
@@ -378,7 +441,7 @@ function Category() {
               </Button>
               <Button
                 variant="outline"
-                className="border-red-400 text-red-500 hover:bg-red-50"
+                className="w-full sm:w-auto border-red-400 text-red-500 hover:bg-red-50"
                 onClick={() => {
                   setDeleteDialogOpen(false);
                   setCategoryToDelete(null);
@@ -391,7 +454,6 @@ function Category() {
           </div>
         </DialogContent>
       </Dialog>
-
       {/* Update Category Dialog */}
       <Dialog open={updateDialogOpen} onOpenChange={setUpdateDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -437,7 +499,9 @@ function Category() {
                 </div>
               )}
             </div>
-            <DialogFooter className="float-left">
+            <DialogFooter className="flex justify-end w-full">
+              {" "}
+              {/* Aligned to end */}
               <Button type="submit" disabled={updateLoading}>
                 {updateLoading && (
                   <Loader2 className="animate-spin w-4 h-4 mr-2" />
