@@ -213,7 +213,6 @@ export default function AdjustmentsPage() {
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 pr-4">
             {" "}
-            {/* Added pr-4 for spacing */}
             <h3 className="font-semibold text-gray-900 truncate">
               {adj.ref || "N/A"}
             </h3>
@@ -382,6 +381,7 @@ export default function AdjustmentsPage() {
                   <SelectValue placeholder="10" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="10">1</SelectItem>
                   <SelectItem value="10">10</SelectItem>
                   <SelectItem value="25">25</SelectItem>
                   <SelectItem value="50">50</SelectItem>
