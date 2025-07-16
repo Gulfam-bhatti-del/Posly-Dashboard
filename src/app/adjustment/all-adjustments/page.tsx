@@ -42,6 +42,7 @@ import {
   Search,
   Loader2,
   Download,
+  MoreVertical,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
