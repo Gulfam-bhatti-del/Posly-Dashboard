@@ -1,5 +1,4 @@
 "use client"
-
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -9,9 +8,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ArrowLeft, Trash2, Search } from "lucide-react"
+import { ArrowLeft, Trash2, Search, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-import { showSuccess, showError, showWarning } from "@/lib/toast"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 import Link from "next/link"
 
 type Warehouse = {
@@ -60,18 +60,17 @@ export default function CreateTransferPage() {
   useEffect(() => {
     const fetchWarehouses = async () => {
       const { data, error } = await supabase.from("warehouses").select("*").order("name")
-
       if (data && !error) {
         setWarehouses(data)
       } else {
-        showError("Error loading warehouses")
+        toast.error("Error loading warehouses")
+        console.error("Error loading warehouses:", error)
       }
     }
-
     fetchWarehouses()
   }, [])
 
-  // Search products
+  // Search products with alternative approach
   useEffect(() => {
     if (search.length < 2) {
       setProducts([])
@@ -80,16 +79,25 @@ export default function CreateTransferPage() {
 
     const searchProducts = async () => {
       setSearchLoading(true)
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, code, name, current_stock, cost")
-        .or(`name.ilike.%${search}%,code.ilike.%${search}%`)
-        .limit(10)
+      try {
+        // Use separate queries and combine results to avoid OR issues
+        const [nameResults, codeResults] = await Promise.all([
+          supabase.from("products").select("id, code, name, current_stock, cost").ilike("name", `%${search}%`).limit(5),
+          supabase.from("products").select("id, code, name, current_stock, cost").ilike("code", `%${search}%`).limit(5),
+        ])
 
-      if (data && !error) {
-        setProducts(data)
+        // Combine and deduplicate results
+        const combinedResults = [...(nameResults.data || []), ...(codeResults.data || [])]
+          .filter((item, index, self) => index === self.findIndex((t) => t.id === item.id))
+          .slice(0, 10)
+
+        setProducts(combinedResults)
+      } catch (error) {
+        console.error("Search error:", error)
+        toast.error("Error searching products")
+      } finally {
+        setSearchLoading(false)
       }
-      setSearchLoading(false)
     }
 
     const timeoutId = setTimeout(searchProducts, 300)
@@ -98,10 +106,9 @@ export default function CreateTransferPage() {
 
   const addProduct = (product: Product) => {
     if (transferItems.some((item) => item.product_id === product.id)) {
-      showWarning("Product already added to transfer")
+      toast.warn("Product already added to transfer")
       return
     }
-
     const newItem: TransferItem = {
       product_id: product.id,
       code: product.code,
@@ -113,7 +120,6 @@ export default function CreateTransferPage() {
       tax: 0,
       subtotal: product.cost,
     }
-
     setTransferItems([...transferItems, newItem])
     setSearch("")
     setProducts([])
@@ -124,7 +130,6 @@ export default function CreateTransferPage() {
       items.map((item, i) => {
         if (i === idx) {
           const updatedItem = { ...item, [field]: value }
-          // Recalculate subtotal when qty, cost, discount, or tax changes
           if (["qty", "net_unit_cost", "discount", "tax"].includes(field)) {
             const qty = field === "qty" ? value : updatedItem.qty
             const cost = field === "net_unit_cost" ? value : updatedItem.net_unit_cost
@@ -151,107 +156,144 @@ export default function CreateTransferPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!fromWarehouseId) {
-      showError("Please select a source warehouse")
+    // Enhanced validation
+    if (!date || date === "") {
+      toast.error("Please select a date")
       return
     }
-
-    if (!toWarehouseId) {
-      showError("Please select a destination warehouse")
+    if (!fromWarehouseId || fromWarehouseId === "") {
+      toast.error("Please select a source warehouse")
       return
     }
-
+    if (!toWarehouseId || toWarehouseId === "") {
+      toast.error("Please select a destination warehouse")
+      return
+    }
     if (fromWarehouseId === toWarehouseId) {
-      showError("Source and destination warehouses cannot be the same")
+      toast.error("Source and destination warehouses cannot be the same")
+      return
+    }
+    if (transferItems.length === 0) {
+      toast.error("Please add at least one product to transfer")
       return
     }
 
-    if (transferItems.length === 0) {
-      showError("Please add at least one product to transfer")
+    // Validate warehouse IDs are valid numbers
+    const fromWarehouseIdNum = Number.parseInt(fromWarehouseId, 10)
+    const toWarehouseIdNum = Number.parseInt(toWarehouseId, 10)
+
+    if (isNaN(fromWarehouseIdNum) || isNaN(toWarehouseIdNum)) {
+      toast.error("Invalid warehouse selection")
       return
     }
 
     setLoading(true)
-
     try {
-      // Create the transfer record
+      // Create the transfer record with all required fields
+      const transferData = {
+        date: new Date(date).toISOString(), // Ensure date is always included
+        from_warehouse_id: fromWarehouseIdNum,
+        to_warehouse_id: toWarehouseIdNum,
+        total_products: transferItems.length,
+        order_tax: Number(orderTax) || 0,
+        discount: Number(discount) || 0,
+        shipping: Number(shipping) || 0,
+        grand_total: Number(calculateGrandTotal()) || 0,
+        notes: notes || null,
+        details: details || null,
+        status: "pending",
+        ref: null,
+      }
+
+      console.log("Creating transfer with data:", transferData)
+
       const { data: transfer, error: transferError } = await supabase
         .from("transfers")
-        .insert([
-          {
-            date: new Date(date).toISOString(),
-            from_warehouse_id: Number.parseInt(fromWarehouseId),
-            to_warehouse_id: Number.parseInt(toWarehouseId),
-            order_tax: orderTax,
-            discount: discount,
-            shipping: shipping,
-            grand_total: calculateGrandTotal(),
-            notes,
-            details,
-          },
-        ])
+        .insert([transferData])
         .select()
         .single()
 
       if (transferError) {
+        console.error("Transfer creation error:", transferError)
         throw transferError
       }
+
+      console.log("Transfer created successfully:", transfer)
 
       // Create transfer items
       const items = transferItems.map((item) => ({
         transfer_id: transfer.id,
         product_id: item.product_id,
-        qty: item.qty,
-        net_unit_cost: item.net_unit_cost,
-        discount: item.discount,
-        tax: item.tax,
-        subtotal: item.subtotal,
+        qty: Number(item.qty) || 1,
+        net_unit_cost: Number(item.net_unit_cost) || 0,
+        discount: Number(item.discount) || 0,
+        tax: Number(item.tax) || 0,
+        subtotal: Number(item.subtotal) || 0,
       }))
+
+      console.log("Creating transfer items:", items)
 
       const { error: itemsError } = await supabase.from("transfer_items").insert(items)
 
       if (itemsError) {
+        console.error("Transfer items creation error:", itemsError)
         throw itemsError
       }
 
-      showSuccess("Transfer created successfully!")
+      toast.success("Transfer created successfully!")
       router.push("/transfers")
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating transfer:", error)
-      showError("Error creating transfer. Please try again.")
+
+      // More specific error handling
+      if (error.code === "42804") {
+        toast.error("Database constraint error. The RLS policy needs to be fixed.")
+      } else if (error.code === "23503") {
+        toast.error("Invalid reference. Please ensure all selected items exist.")
+      } else if (error.code === "42501") {
+        toast.error("Permission denied. Please check your access rights.")
+      } else {
+        toast.error("Error creating transfer: " + (error.message || "Unknown error"))
+      }
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center gap-4 mb-6">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <ToastContainer position="top-center" />
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center gap-4 mb-6 flex-wrap">
           <Link href="/transfer/all-transfers">
             <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" /> Back to Transfers
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">Create Transfer</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Create Transfer</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Transfer Information</CardTitle>
+          <Card className="p-4 sm:p-6">
+            <CardHeader className="p-0 pb-4">
+              <CardTitle className="text-lg sm:text-xl">Transfer Information</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block mb-2 text-sm font-medium">Date *</label>
-                  <Input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} required />
+                  <Input
+                    type="datetime-local"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    required
+                    className="w-full"
+                  />
                 </div>
-
                 <div>
                   <label className="block mb-2 text-sm font-medium">From Warehouse *</label>
                   <Select value={fromWarehouseId} onValueChange={setFromWarehouseId} required>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Choose Warehouse" />
                     </SelectTrigger>
                     <SelectContent>
@@ -263,11 +305,10 @@ export default function CreateTransferPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div>
                   <label className="block mb-2 text-sm font-medium">To Warehouse *</label>
                   <Select value={toWarehouseId} onValueChange={setToWarehouseId} required>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Choose Warehouse" />
                     </SelectTrigger>
                     <SelectContent>
@@ -283,23 +324,23 @@ export default function CreateTransferPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Add Products</CardTitle>
+          <Card className="p-4 sm:p-6">
+            <CardHeader className="p-0 pb-4">
+              <CardTitle className="text-lg sm:text-xl">Add Products</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <div className="relative">
                 <div className="flex items-center">
-                  <Search className="w-4 h-4 absolute left-3 text-gray-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <Input
                     placeholder="Scan/Search Product by code or name"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 w-full"
                   />
                   {searchLoading && (
-                    <div className="absolute right-3">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <Loader2 className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900" />
                     </div>
                   )}
                 </div>
@@ -311,14 +352,14 @@ export default function CreateTransferPage() {
                         className="p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
                         onClick={() => addProduct(p)}
                       >
-                        <div className="flex justify-between items-start">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                           <div>
                             <div className="font-medium">
                               {p.code} - {p.name}
                             </div>
                             <div className="text-sm text-gray-500">Cost: ${p.cost}</div>
                           </div>
-                          <div className="text-sm text-gray-500">Stock: {p.current_stock}</div>
+                          <div className="text-sm text-gray-500 mt-1 sm:mt-0">Stock: {p.current_stock}</div>
                         </div>
                       </div>
                     ))}
@@ -328,41 +369,41 @@ export default function CreateTransferPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Transfer Items</CardTitle>
+          <Card className="p-4 sm:p-6">
+            <CardHeader className="p-0 pb-4">
+              <CardTitle className="text-lg sm:text-xl">Transfer Items ({transferItems.length})</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {transferItems.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <div className="text-gray-400 mb-4">No data Available</div>
                   <p className="text-sm">Search and add products above</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
+                <div className="overflow-x-auto rounded-lg border">
+                  <Table className="min-w-full">
                     <TableHeader>
                       <TableRow className="bg-gray-50">
-                        <TableHead>#</TableHead>
-                        <TableHead>Product Name</TableHead>
-                        <TableHead>Net Unit Cost</TableHead>
-                        <TableHead>Current Stock</TableHead>
-                        <TableHead>Qty</TableHead>
-                        <TableHead>Discount</TableHead>
-                        <TableHead>Tax</TableHead>
-                        <TableHead>Subtotal</TableHead>
-                        <TableHead>Action</TableHead>
+                        <TableHead className="whitespace-nowrap">#</TableHead>
+                        <TableHead className="whitespace-nowrap">Product Name</TableHead>
+                        <TableHead className="whitespace-nowrap">Net Unit Cost</TableHead>
+                        <TableHead className="whitespace-nowrap">Current Stock</TableHead>
+                        <TableHead className="whitespace-nowrap">Qty</TableHead>
+                        <TableHead className="whitespace-nowrap">Discount</TableHead>
+                        <TableHead className="whitespace-nowrap">Tax</TableHead>
+                        <TableHead className="whitespace-nowrap">Subtotal</TableHead>
+                        <TableHead className="whitespace-nowrap">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {transferItems.map((item, idx) => (
                         <TableRow key={item.product_id}>
-                          <TableCell>{idx + 1}</TableCell>
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">{idx + 1}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <div className="font-medium">{item.name}</div>
                             <div className="text-sm text-gray-500">{item.code}</div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <Input
                               type="number"
                               step="0.01"
@@ -372,8 +413,8 @@ export default function CreateTransferPage() {
                               className="w-24"
                             />
                           </TableCell>
-                          <TableCell>{item.current_stock}</TableCell>
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">{item.current_stock}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <Input
                               type="number"
                               min="1"
@@ -382,7 +423,7 @@ export default function CreateTransferPage() {
                               className="w-20"
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <Input
                               type="number"
                               step="0.01"
@@ -392,7 +433,7 @@ export default function CreateTransferPage() {
                               className="w-24"
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <Input
                               type="number"
                               step="0.01"
@@ -402,10 +443,10 @@ export default function CreateTransferPage() {
                               className="w-24"
                             />
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <span className="font-medium">${item.subtotal.toFixed(2)}</span>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <Button
                               type="button"
                               variant="outline"
@@ -420,12 +461,11 @@ export default function CreateTransferPage() {
                       ))}
                     </TableBody>
                   </Table>
-
                   <div className="mt-6 flex justify-end">
-                    <div className="w-80 space-y-2">
+                    <div className="w-full sm:w-80 space-y-2 p-4 border rounded-lg bg-gray-50">
                       <div className="flex justify-between">
                         <span>Order Tax</span>
-                        <span>{((orderTax / calculateGrandTotal()) * 100).toFixed(2)}%</span>
+                        <span>${orderTax.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Discount</span>
@@ -447,9 +487,9 @@ export default function CreateTransferPage() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <label className="block mb-2 text-sm font-medium">Order Tax</label>
+            <Card className="p-4 sm:p-6">
+              <CardContent className="p-0">
+                <label className="block mb-2 text-sm font-medium">Order Tax ($)</label>
                 <div className="flex items-center">
                   <Input
                     type="number"
@@ -463,23 +503,22 @@ export default function CreateTransferPage() {
                 </div>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <label className="block mb-2 text-sm font-medium">Discount</label>
+            <Card className="p-4 sm:p-6">
+              <CardContent className="p-0">
+                <label className="block mb-2 text-sm font-medium">Discount ($)</label>
                 <Input
                   type="number"
                   step="0.01"
                   min="0"
                   value={discount}
                   onChange={(e) => setDiscount(Number(e.target.value))}
+                  className="w-full"
                 />
               </CardContent>
             </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <label className="block mb-2 text-sm font-medium">Shipping</label>
+            <Card className="p-4 sm:p-6">
+              <CardContent className="p-0">
+                <label className="block mb-2 text-sm font-medium">Shipping ($)</label>
                 <div className="flex items-center">
                   <Input
                     type="number"
@@ -496,43 +535,51 @@ export default function CreateTransferPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card>
-              <CardContent className="p-4">
+            <Card className="p-4 sm:p-6">
+              <CardContent className="p-0">
                 <label className="block mb-2 text-sm font-medium">Please provide any details</label>
                 <Textarea
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                   placeholder="Please provide any details"
                   rows={4}
+                  className="w-full"
                 />
               </CardContent>
             </Card>
-
-            <Card>
-              <CardContent className="p-4">
+            <Card className="p-4 sm:p-6">
+              <CardContent className="p-0">
                 <label className="block mb-2 text-sm font-medium">Notes</label>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add any notes here..."
                   rows={4}
+                  className="w-full"
                 />
               </CardContent>
             </Card>
           </div>
 
-          <div className="flex justify-end space-x-4">
-            <Link href="/transfers">
-              <Button type="button" variant="outline">
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
+            <Link href="/transfer/all-transfers" className="w-full sm:w-auto">
+              <Button type="button" variant="outline" className="w-full bg-transparent">
                 Cancel
               </Button>
             </Link>
             <Button
               type="submit"
               disabled={loading || transferItems.length === 0}
-              className="min-w-32 bg-blue-600 hover:bg-blue-700"
+              className="min-w-32 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
             >
-              {loading ? "Creating..." : "Submit"}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Submit"
+              )}
             </Button>
           </div>
         </form>
