@@ -470,7 +470,7 @@ export default function EditTransferForm() {
           <div className="text-center py-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Transfer Not Found</h2>
             <p className="text-gray-600 mb-6">The transfer you're trying to edit doesn't exist or has been deleted.</p>
-            <Link href="/transfers">
+            <Link href="/transfer/all-transfers">
               <Button>Back to Transfers</Button>
             </Link>
           </div>
@@ -483,7 +483,7 @@ export default function EditTransferForm() {
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-4 mb-6 flex-wrap">
-          <Link href="/transfers">
+          <Link href="/transfer/all-transfers">
             <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" /> Back to Transfers
             </Button>
@@ -785,7 +785,7 @@ export default function EditTransferForm() {
           </div>
 
           <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
-            <Link href="/transfers" className="w-full sm:w-auto">
+            <Link href="/transfer/all-transfers" className="w-full sm:w-auto">
               <Button type="button" variant="outline" className="w-full bg-transparent">
                 Cancel
               </Button>
