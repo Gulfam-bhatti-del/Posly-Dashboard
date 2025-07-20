@@ -1,106 +1,192 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Separator } from "@/components/ui/separator";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/lib/supabase";
-import { Loader2 } from "lucide-react";
+"use client"
+import { useState, useEffect } from "react"
+import type React from "react"
+
+import { useParams, useRouter } from "next/navigation"
+import { Separator } from "@/components/ui/separator"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { supabase } from "@/lib/supabase"
+import { Loader2 } from "lucide-react"
+import { Trash2 } from "lucide-react" // Import Trash2
+
+// --- Types from create-transfer ---
+type Product = {
+  id: string
+  code: string
+  name: string
+  current_stock: number
+  cost: number
+}
+
+type QuotationItem = {
+  product_id: string
+  code: string
+  name: string
+  current_stock: number
+  qty: number
+  net_unit_price: number
+  discount: number
+  tax: number
+  subtotal: number
+}
 
 export default function EditQuotationPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = params.id as string;
+  const params = useParams()
+  const router = useRouter()
+  const id = params.id as string
 
   const [form, setForm] = useState({
     date: "",
     ref: "",
-    customer: "",
-    warehouse: "",
+    customer_id: "", // Keep as string for Select component value
+    warehouse_id: "", // Keep as string for Select component value
     orderTax: 0,
     discount: 0,
     discountType: "Fixed",
     shipping: 0,
     details: "",
     grand_total: 0,
-  });
+  })
 
-  const [customers, setCustomers] = useState([{ id: "1", name: "Customer A" }, { id: "2", name: "Customer B" }]);
-  const [warehouses, setWarehouses] = useState([{ id: "1", name: "Warehouse X" }, { id: "2", name: "Warehouse Y" }]);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [subtotal, setSubtotal] = useState(0); // Replace with real subtotal logic
+  // Update customer ID type to number
+  const [customers, setCustomers] = useState<{ id: number; name: string }[]>([])
+  const [warehouses, setWarehouses] = useState<{ id: string; name: string }[]>([]) // Assuming warehouses still use string IDs
+  const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]) // To store fetched items
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState("")
+  const [subtotal, setSubtotal] = useState(0)
+
+  // Fetch Customers and Warehouses
+  useEffect(() => {
+    async function fetchData() {
+      // Fetch customers with id as number
+      const { data: customersData, error: customersError } = await supabase.from("customers").select("id, full_name")
+      if (customersData) {
+        setCustomers(customersData.map((c) => ({ id: c.id, name: c.full_name }))) // Map full_name to name
+      }
+      if (customersError) console.error("Error fetching customers:", customersError)
+
+      const { data: warehousesData, error: warehousesError } = await supabase.from("warehouses").select("id, name")
+      if (warehousesData) setWarehouses(warehousesData) // Corrected setWarehouses
+      if (warehousesError) console.error("Error fetching warehouses:", warehousesError)
+    }
+    fetchData()
+  }, [])
 
   // Fetch quotation data
   useEffect(() => {
     async function fetchQuotation() {
-      setLoading(true);
-      const { data, error } = await supabase.from("quotations").select("*").eq("id", id).single();
-      setLoading(false);
+      setLoading(true)
+      const { data, error } = await supabase.from("quotations").select("*").eq("id", id).single()
+      setLoading(false)
       if (error) {
-        setMessage("Error fetching quotation: " + error.message);
+        setMessage("Error fetching quotation: " + error.message)
       } else if (data) {
         setForm({
-          date: data.date || "",
+          date: data.date ? new Date(data.date).toISOString().slice(0, 19) : "", // Format date for datetime-local input
           ref: data.ref || "",
-          customer: data.customer || "",
-          warehouse: data.warehouse || "",
+          customer_id: String(data.customer_id) || "", // Convert to string for Select component
+          warehouse_id: data.warehouse_id || "", // Use warehouse_id
           orderTax: data.orderTax || 0,
           discount: data.discount || 0,
           discountType: data.discountType || "Fixed",
           shipping: data.shipping || 0,
           details: data.details || "",
           grand_total: data.grand_total || 0,
-        });
-        // setSubtotal(data.subtotal || 100); // If you store subtotal
+        })
+        setQuotationItems(data.items || []) // Assuming items are stored as JSONB
+        setSubtotal(data.items ? data.items.reduce((sum: number, item: QuotationItem) => sum + item.subtotal, 0) : 0)
       }
     }
-    if (id) fetchQuotation();
-  }, [id]);
+    if (id) fetchQuotation()
+  }, [id])
 
   // Calculate grand total
   useEffect(() => {
-    let orderTaxAmount = (subtotal * Number(form.orderTax)) / 100;
-    let discountAmount =
-      form.discountType === "Percent"
-        ? (subtotal * Number(form.discount)) / 100
-        : Number(form.discount);
-    let shippingAmount = Number(form.shipping);
-    let grand_total = subtotal + orderTaxAmount + shippingAmount - discountAmount;
-    setForm((prev) => ({ ...prev, grand_total: grand_total }));
-  }, [form.orderTax, form.discount, form.discountType, form.shipping, subtotal]);
+    const orderTaxAmount = (subtotal * Number(form.orderTax)) / 100
+    const discountAmount =
+      form.discountType === "Percent" ? (subtotal * Number(form.discount)) / 100 : Number(form.discount)
+    const shippingAmount = Number(form.shipping)
+    const grand_total = subtotal + orderTaxAmount + shippingAmount - discountAmount
+    setForm((prev) => ({ ...prev, grand_total: grand_total }))
+  }, [form.orderTax, form.discount, form.discountType, form.shipping, subtotal])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
 
   const handleSelect = (name: string, value: string) => {
-    setForm({ ...form, [name]: value });
-  };
+    setForm({ ...form, [name]: value })
+  }
+
+  const updateItem = (idx: number, field: keyof QuotationItem, value: any) => {
+    setQuotationItems((items) =>
+      items.map((item, i) => {
+        if (i === idx) {
+          const updatedItem = { ...item, [field]: value }
+          if (["qty", "net_unit_price", "discount", "tax"].includes(field)) {
+            const qty = field === "qty" ? value : updatedItem.qty
+            const price = field === "net_unit_price" ? value : updatedItem.net_unit_price
+            const discount = field === "discount" ? value : updatedItem.discount
+            const tax = field === "tax" ? value : updatedItem.tax
+            updatedItem.subtotal = qty * price - discount + tax
+          }
+          return updatedItem
+        }
+        return item
+      }),
+    )
+  }
+
+  const removeItem = (idx: number) => {
+    setQuotationItems((items) => items.filter((_, i) => i !== idx))
+  }
+
+  useEffect(() => {
+    const currentSubtotal = quotationItems.reduce((sum, item) => sum + item.subtotal, 0)
+    setSubtotal(currentSubtotal)
+  }, [quotationItems])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    const { error } = await supabase.from("quotations").update({
-      date: form.date,
-      ref: form.ref,
-      customer: form.customer,
-      warehouse: form.warehouse,
-      grand_total: form.grand_total,
-    }).eq("id", id);
-    setLoading(false);
+    e.preventDefault()
+    setLoading(true)
+    setMessage("")
+
+    // Get customer and warehouse names from their IDs
+    const customerName = customers.find((c) => c.id === Number(form.customer_id))?.name || ""
+    const warehouseName = warehouses.find((w) => w.id === form.warehouse_id)?.name || ""
+
+    const { error } = await supabase
+      .from("quotations")
+      .update({
+        date: form.date,
+        ref: form.ref,
+        customer_id: Number(form.customer_id), // Convert to number for database
+        customer: customerName,
+        warehouse_id: form.warehouse_id,
+        warehouse: warehouseName,
+        orderTax: form.orderTax,
+        discount: form.discount,
+        discountType: form.discountType,
+        shipping: form.shipping,
+        details: form.details,
+        grand_total: form.grand_total,
+        items: quotationItems, // Update quotation items
+      })
+      .eq("id", id)
+    setLoading(false)
     if (error) {
-      setMessage("Error: " + error.message);
+      setMessage("Error: " + error.message)
     } else {
-      setMessage("Quotation updated!");
-      router.push("/quotations/all-quotations");
+      setMessage("Quotation updated!")
+      router.push("/quotations/all-quotations")
     }
-  };
+  }
 
   return (
     <div className="container mx-auto p-4">
@@ -123,33 +209,37 @@ export default function EditQuotationPage() {
               </div>
               <div>
                 <Label>Customer *</Label>
-                <Select value={form.customer} onValueChange={v => handleSelect("customer", v)}>
+                <Select value={form.customer_id} onValueChange={(v) => handleSelect("customer_id", v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Choose Customer" />
                   </SelectTrigger>
                   <SelectContent>
-                    {customers.map(c => (
-                      <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                    {customers.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>
+                        {c.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <Label>Warehouse *</Label>
-                <Select value={form.warehouse} onValueChange={v => handleSelect("warehouse", v)}>
+                <Select value={form.warehouse_id} onValueChange={(v) => handleSelect("warehouse_id", v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Choose Warehouse" />
                   </SelectTrigger>
                   <SelectContent>
-                    {warehouses.map(w => (
-                      <SelectItem key={w.id} value={w.name}>{w.name}</SelectItem>
+                    {warehouses.map((w) => (
+                      <SelectItem key={w.id} value={w.id}>
+                        {w.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Product Search & Table (expand as needed) */}
+            {/* Product Search & Table */}
             <div className="bg-muted rounded-md p-4">
               <Input placeholder="Scan/Search Product by code or name" disabled />
               <div className="mt-4 overflow-x-auto">
@@ -168,19 +258,84 @@ export default function EditQuotationPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td colSpan={9} className="text-center">No data Available</td>
-                    </tr>
+                    {quotationItems.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="text-center">
+                          No data Available
+                        </td>
+                      </tr>
+                    ) : (
+                      quotationItems.map((item, idx) => (
+                        <tr key={item.product_id}>
+                          <td>{idx + 1}</td>
+                          <td>
+                            <div className="font-medium">{item.name}</div>
+                            <div className="text-sm text-gray-500">{item.code}</div>
+                          </td>
+                          <td>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={item.net_unit_price}
+                              onChange={(e) => updateItem(idx, "net_unit_price", Number(e.target.value))}
+                              className="w-24"
+                            />
+                          </td>
+                          <td>{item.current_stock}</td>
+                          <td>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={item.qty}
+                              onChange={(e) => updateItem(idx, "qty", Math.max(1, Number(e.target.value)))}
+                              className="w-20"
+                            />
+                          </td>
+                          <td>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={item.discount}
+                              onChange={(e) => updateItem(idx, "discount", Number(e.target.value))}
+                              className="w-24"
+                            />
+                          </td>
+                          <td>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={item.tax}
+                              onChange={(e) => updateItem(idx, "tax", Number(e.target.value))}
+                              className="w-24"
+                            />
+                          </td>
+                          <td>${item.subtotal.toFixed(2)}</td>
+                          <td>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(idx)}>
+                              <Trash2 className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
               <div className="flex flex-col items-end mt-4 space-y-1">
-                <div>Order Tax: ${((subtotal * Number(form.orderTax)) / 100).toFixed(2)} ({form.orderTax}%)</div>
-                <div>Discount: {form.discountType === "Percent"
-                  ? `${form.discount}%`
-                  : `$${Number(form.discount).toFixed(2)}`}</div>
+                <div>
+                  Order Tax: ${((subtotal * Number(form.orderTax)) / 100).toFixed(2)} ({form.orderTax}%)
+                </div>
+                <div>
+                  Discount:{" "}
+                  {form.discountType === "Percent" ? `${form.discount}%` : `$${Number(form.discount).toFixed(2)}`}
+                </div>
                 <div>Shipping: ${Number(form.shipping).toFixed(2)}</div>
-                <div><b>Grand Total: ${Number(form.grand_total).toFixed(2)}</b></div>
+                <div>
+                  <b>Grand Total: ${Number(form.grand_total).toFixed(2)}</b>
+                </div>
               </div>
             </div>
 
@@ -197,7 +352,7 @@ export default function EditQuotationPage() {
                 <Label>Discount</Label>
                 <div className="flex items-center">
                   <Input name="discount" value={form.discount} onChange={handleChange} />
-                  <Select value={form.discountType} onValueChange={v => handleSelect("discountType", v)}>
+                  <Select value={form.discountType} onValueChange={(v) => handleSelect("discountType", v)}>
                     <SelectTrigger className="ml-2 w-20">
                       <SelectValue placeholder="Fixed" />
                     </SelectTrigger>
@@ -233,5 +388,5 @@ export default function EditQuotationPage() {
         </Card>
       </form>
     </div>
-  );
+  )
 }
