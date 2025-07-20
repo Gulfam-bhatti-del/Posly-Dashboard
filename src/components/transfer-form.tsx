@@ -249,7 +249,7 @@ export default function TransferForm() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Link href="/transfers">
+          <Link href="/transfer/all-transfers">
             <Button variant="outline" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Transfers
@@ -557,7 +557,7 @@ export default function TransferForm() {
 
           {/* Form Actions */}
           <div className="flex justify-end space-x-4">
-            <Link href="/transfers">
+            <Link href="/transfer/all-transfers">
               <Button type="button" variant="outline">
                 Cancel
               </Button>
