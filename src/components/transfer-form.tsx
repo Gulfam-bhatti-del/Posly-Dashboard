@@ -234,7 +234,7 @@ export default function TransferForm() {
       if (itemsError) throw itemsError
 
       toast.success("Transfer created successfully!")
-      router.push("/transfers")
+      router.push("/transfer/all-transfers")
     } catch (error: any) {
       console.error("Error creating transfer:", error)
       toast.error(`Failed to create transfer: ${error.message}`)
