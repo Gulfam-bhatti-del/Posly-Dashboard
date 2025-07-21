@@ -11,7 +11,6 @@ import { supabase } from "@/lib/supabase";
 import { Loader2, Search, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-// --- Types from create-transfer ---
 type Product = {
   id: string;
   code: string;
@@ -179,62 +178,62 @@ export default function AddQuotationPage() {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-semibold mb-4">Add Quotation</h1>
-      <Separator className="my-4" />
+    <div className="container mx-auto p-2 sm:p-4">
+      <h1 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-4">Add Quotation</h1>
+      <Separator className="my-2 sm:my-4" />
       <form onSubmit={handleSubmit}>
-        <Card className="p-6 space-y-6">
-          <CardHeader>
-            <CardTitle>Add Quotation</CardTitle>
+        <Card className="p-2 sm:p-6 space-y-4 sm:space-y-6">
+          <CardHeader className="p-2 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl">Add Quotation</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
+          <CardContent className="space-y-3 sm:space-y-4 p-2 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="space-y-1">
                 <Label>Date</Label>
-                <Input type="datetime-local" name="date" value={form.date} onChange={handleChange} />
+                <Input type="datetime-local" name="date" value={form.date} onChange={handleChange} className="text-sm" />
               </div>
-              <div>
+              <div className="space-y-1">
                 <Label>Customer *</Label>
                 <Select value={form.customer} onValueChange={v => handleSelect("customer", v)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Choose Customer" />
                   </SelectTrigger>
                   <SelectContent>
                     {customers.map(c => (
-                      <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>
+                      <SelectItem key={c.id} value={c.name} className="text-sm">{c.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+              <div className="space-y-1">
                 <Label>Warehouse *</Label>
                 <Select value={form.warehouse} onValueChange={v => handleSelect("warehouse", v)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Choose Warehouse" />
                   </SelectTrigger>
                   <SelectContent>
                     {warehouses.map(w => (
-                      <SelectItem key={w.id} value={w.name}>{w.name}</SelectItem>
+                      <SelectItem key={w.id} value={w.name} className="text-sm">{w.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* Product Search & Table (dynamic, from create-transfer) */}
-            <div className="bg-muted rounded-md p-4">
-              <div className="relative mb-4">
+            {/* Product Search & Table */}
+            <div className="bg-muted rounded-md p-3 sm:p-4">
+              <div className="relative mb-3 sm:mb-4">
                 <div className="flex items-center">
                   <Search className="w-4 h-4 absolute left-3 text-gray-400" />
                   <Input
                     placeholder="Scan/Search Product by code or name"
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 text-sm"
                   />
                   {searchLoading && (
                     <div className="absolute right-3">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+                      <Loader2 className="animate-spin w-4 h-4" />
                     </div>
                   )}
                 </div>
@@ -243,7 +242,7 @@ export default function AddQuotationPage() {
                     {products.map((p) => (
                       <div
                         key={p.id}
-                        className="p-3 hover:bg-gray-100 cursor-pointer border-b last:border-b-0"
+                        className="p-2 hover:bg-gray-100 cursor-pointer border-b last:border-b-0 text-sm"
                         onClick={() => addProduct(p)}
                       >
                         <div className="flex justify-between items-start">
@@ -251,87 +250,87 @@ export default function AddQuotationPage() {
                             <div className="font-medium">
                               {p.code} - {p.name}
                             </div>
-                            <div className="text-sm text-gray-500">Price: ${p.cost}</div>
+                            <div className="text-xs text-gray-500">Price: ${p.cost}</div>
                           </div>
-                          <div className="text-sm text-gray-500">Stock: {p.current_stock}</div>
+                          <div className="text-xs text-gray-500">Stock: {p.current_stock}</div>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full text-sm">
+              <div className="mt-3 sm:mt-4 overflow-x-auto">
+                <table className="w-full text-xs sm:text-sm">
                   <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Product Name</th>
-                      <th>Net Unit Price</th>
-                      <th>Current Stock</th>
-                      <th>Qty</th>
-                      <th>Discount</th>
-                      <th>Tax</th>
-                      <th>Subtotal</th>
-                      <th>Action</th>
+                    <tr className="text-left">
+                      <th className="p-1 sm:p-2">#</th>
+                      <th className="p-1 sm:p-2">Product</th>
+                      <th className="p-1 sm:p-2">Price</th>
+                      <th className="p-1 sm:p-2 hidden sm:table-cell">Stock</th>
+                      <th className="p-1 sm:p-2">Qty</th>
+                      <th className="p-1 sm:p-2 hidden sm:table-cell">Discount</th>
+                      <th className="p-1 sm:p-2 hidden sm:table-cell">Tax</th>
+                      <th className="p-1 sm:p-2">Subtotal</th>
+                      <th className="p-1 sm:p-2">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {quotationItems.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="text-center">No data Available</td>
+                        <td colSpan={9} className="text-center p-2 text-sm">No data Available</td>
                       </tr>
                     ) : (
                       quotationItems.map((item, idx) => (
-                        <tr key={item.product_id}>
-                          <td>{idx + 1}</td>
-                          <td>
+                        <tr key={item.product_id} className="border-t">
+                          <td className="p-1 sm:p-2">{idx + 1}</td>
+                          <td className="p-1 sm:p-2">
                             <div className="font-medium">{item.name}</div>
-                            <div className="text-sm text-gray-500">{item.code}</div>
+                            <div className="text-xs text-gray-500">{item.code}</div>
                           </td>
-                          <td>
+                          <td className="p-1 sm:p-2">
                             <Input
                               type="number"
                               step="0.01"
                               min="0"
                               value={item.net_unit_price}
                               onChange={e => updateItem(idx, "net_unit_price", Number(e.target.value))}
-                              className="w-24"
+                              className="w-16 sm:w-24 text-xs sm:text-sm"
                             />
                           </td>
-                          <td>{item.current_stock}</td>
-                          <td>
+                          <td className="p-1 sm:p-2 hidden sm:table-cell">{item.current_stock}</td>
+                          <td className="p-1 sm:p-2">
                             <Input
                               type="number"
                               min="1"
                               value={item.qty}
                               onChange={e => updateItem(idx, "qty", Math.max(1, Number(e.target.value)))}
-                              className="w-20"
+                              className="w-12 sm:w-20 text-xs sm:text-sm"
                             />
                           </td>
-                          <td>
+                          <td className="p-1 sm:p-2 hidden sm:table-cell">
                             <Input
                               type="number"
                               step="0.01"
                               min="0"
                               value={item.discount}
                               onChange={e => updateItem(idx, "discount", Number(e.target.value))}
-                              className="w-24"
+                              className="w-16 sm:w-24 text-xs sm:text-sm"
                             />
                           </td>
-                          <td>
+                          <td className="p-1 sm:p-2 hidden sm:table-cell">
                             <Input
                               type="number"
                               step="0.01"
                               min="0"
                               value={item.tax}
                               onChange={e => updateItem(idx, "tax", Number(e.target.value))}
-                              className="w-24"
+                              className="w-16 sm:w-24 text-xs sm:text-sm"
                             />
                           </td>
-                          <td>${item.subtotal.toFixed(2)}</td>
-                          <td>
-                            <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(idx)}>
-                              <Trash2 className="w-4 h-4 text-red-500" />
+                          <td className="p-1 sm:p-2">${item.subtotal.toFixed(2)}</td>
+                          <td className="p-1 sm:p-2">
+                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8" onClick={() => removeItem(idx)}>
+                              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
                             </Button>
                           </td>
                         </tr>
@@ -340,55 +339,55 @@ export default function AddQuotationPage() {
                   </tbody>
                 </table>
               </div>
-              <div className="flex flex-col items-end mt-4 space-y-1">
+              <div className="flex flex-col items-end mt-3 sm:mt-4 space-y-1 text-sm">
                 <div>Order Tax: ${orderTaxAmount.toFixed(2)} ({form.orderTax}%)</div>
                 <div>Discount: {form.discountType === "Percent"
                   ? `${form.discount}%`
                   : `$${Number(form.discount).toFixed(2)}`}</div>
                 <div>Shipping: ${shippingAmount.toFixed(2)}</div>
-                <div><b>Grand Total: ${grand_total.toFixed(2)}</b></div>
+                <div className="font-bold">Grand Total: ${grand_total.toFixed(2)}</div>
               </div>
             </div>
 
             {/* Order Tax, Discount, Shipping */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="space-y-1">
                 <Label>Order Tax</Label>
                 <div className="flex items-center">
-                  <Input name="orderTax" value={form.orderTax} onChange={handleChange} />
-                  <span className="ml-2">%</span>
+                  <Input name="orderTax" value={form.orderTax} onChange={handleChange} className="text-sm" />
+                  <span className="ml-2 text-sm">%</span>
                 </div>
               </div>
-              <div>
+              <div className="space-y-1">
                 <Label>Discount</Label>
                 <div className="flex items-center">
-                  <Input name="discount" value={form.discount} onChange={handleChange} />
+                  <Input name="discount" value={form.discount} onChange={handleChange} className="text-sm" />
                   <Select value={form.discountType} onValueChange={v => handleSelect("discountType", v)}>
-                    <SelectTrigger className="ml-2 w-20">
+                    <SelectTrigger className="ml-2 w-20 text-sm">
                       <SelectValue placeholder="Fixed" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Fixed">Fixed</SelectItem>
-                      <SelectItem value="Percent">Percent</SelectItem>
+                      <SelectItem value="Fixed" className="text-sm">Fixed</SelectItem>
+                      <SelectItem value="Percent" className="text-sm">Percent</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <div>
+              <div className="space-y-1">
                 <Label>Shipping</Label>
                 <div className="flex items-center">
-                  <Input name="shipping" value={form.shipping} onChange={handleChange} />
+                  <Input name="shipping" value={form.shipping} onChange={handleChange} className="text-sm" />
                 </div>
               </div>
             </div>
-            <div>
+            <div className="space-y-1">
               <Label>Details</Label>
-              <Textarea name="details" value={form.details} onChange={handleChange} />
+              <Textarea name="details" value={form.details} onChange={handleChange} className="text-sm" />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col items-end gap-2">
-            {message && <div className="text-sm text-red-500 mb-2">{message}</div>}
-            <Button type="submit" disabled={loading} className="w-40">
+          <CardFooter className="flex flex-col items-end gap-2 p-4 sm:p-6">
+            {message && <div className="text-xs sm:text-sm text-red-500">{message}</div>}
+            <Button type="submit" disabled={loading} className="w-full sm:w-40">
               {loading && <Loader2 className="animate-spin w-4 h-4 mr-2" />}
               Create Quotation
             </Button>
