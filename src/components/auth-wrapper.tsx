@@ -10,7 +10,6 @@ interface AuthWrapperProps {
 
 export function AuthWrapper({ children }: AuthWrapperProps) {
   const { user, loading } = useAuth()
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -18,10 +17,8 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       </div>
     )
   }
-
   if (!user) {
     return <AuthForm />
   }
-
   return <>{children}</>
 }
