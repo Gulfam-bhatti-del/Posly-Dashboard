@@ -1,38 +1,41 @@
-"use client";
-import { useState, useEffect } from "react";
-import { Separator } from "@/components/ui/separator";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { supabase } from "@/lib/supabase";
-import { Loader2, Search, Trash2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+"use client"
+
+import type React from "react"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import { Search, Loader2, Trash2 } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { supabase } from "@/lib/supabase"
 
 type Product = {
-  id: string;
-  code: string;
-  name: string;
-  current_stock: number;
-  cost: number;
-};
+  id: string
+  code: string
+  name: string
+  current_stock: number
+  cost: number
+}
 
 type QuotationItem = {
-  product_id: string;
-  code: string;
-  name: string;
-  current_stock: number;
-  qty: number;
-  net_unit_price: number;
-  discount: number;
-  tax: number;
-  subtotal: number;
-};
+  product_id: string
+  code: string
+  name: string
+  current_stock: number
+  qty: number
+  net_unit_price: number
+  discount: number
+  tax: number
+  subtotal: number
+}
 
 export default function AddQuotationPage() {
-  const router = useRouter();
+  const router = useRouter()
   const [form, setForm] = useState({
     date: new Date().toISOString().slice(0, 19),
     customer: "",
@@ -43,40 +46,44 @@ export default function AddQuotationPage() {
     shipping: 0,
     details: "",
     grand_total: 0,
-  });
-
-  const [customers, setCustomers] = useState([{ id: "1", name: "Customer A" }, { id: "2", name: "Customer B" }]);
-  const [warehouses, setWarehouses] = useState([{ id: "1", name: "Warehouse X" }, { id: "2", name: "Warehouse Y" }]);
-
-  const [search, setSearch] = useState("");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
+  })
+  const [customers, setCustomers] = useState([
+    { id: "1", name: "Customer A" },
+    { id: "2", name: "Customer B" },
+  ])
+  const [warehouses, setWarehouses] = useState([
+    { id: "1", name: "Warehouse X" },
+    { id: "2", name: "Warehouse Y" },
+  ])
+  const [search, setSearch] = useState("")
+  const [products, setProducts] = useState<Product[]>([])
+  const [quotationItems, setQuotationItems] = useState<QuotationItem[]>([])
+  const [searchLoading, setSearchLoading] = useState(false)
 
   useEffect(() => {
     if (search.length < 2) {
-      setProducts([]);
-      return;
+      setProducts([])
+      return
     }
     const searchProducts = async () => {
-      setSearchLoading(true);
+      setSearchLoading(true)
       const { data, error } = await supabase
         .from("products")
         .select("id, code, name, current_stock, cost")
         .or(`name.ilike.%${search}%,code.ilike.%${search}%`)
-        .limit(10);
+        .limit(10)
       if (data && !error) {
-        setProducts(data);
+        setProducts(data)
       }
-      setSearchLoading(false);
-    };
-    const timeoutId = setTimeout(searchProducts, 300);
-    return () => clearTimeout(timeoutId);
-  }, [search]);
+      setSearchLoading(false)
+    }
+    const timeoutId = setTimeout(searchProducts, 300)
+    return () => clearTimeout(timeoutId)
+  }, [search])
 
   const addProduct = (product: Product) => {
     if (quotationItems.some((item) => item.product_id === product.id)) {
-      return;
+      return
     }
     const newItem: QuotationItem = {
       product_id: product.id,
@@ -88,79 +95,81 @@ export default function AddQuotationPage() {
       discount: 0,
       tax: 0,
       subtotal: product.cost,
-    };
-    setQuotationItems([...quotationItems, newItem]);
-    setSearch("");
-    setProducts([]);
-  };
+    }
+    setQuotationItems([...quotationItems, newItem])
+    setSearch("")
+    setProducts([])
+  }
 
   const updateItem = (idx: number, field: keyof QuotationItem, value: any) => {
     setQuotationItems((items) =>
       items.map((item, i) => {
         if (i === idx) {
-          const updatedItem = { ...item, [field]: value };
+          const updatedItem = { ...item, [field]: value }
           if (["qty", "net_unit_price", "discount", "tax"].includes(field)) {
-            const qty = field === "qty" ? value : updatedItem.qty;
-            const price = field === "net_unit_price" ? value : updatedItem.net_unit_price;
-            const discount = field === "discount" ? value : updatedItem.discount;
-            const tax = field === "tax" ? value : updatedItem.tax;
-            updatedItem.subtotal = qty * price - discount + tax;
+            const qty = field === "qty" ? value : updatedItem.qty
+            const price = field === "net_unit_price" ? value : updatedItem.net_unit_price
+            const discount = field === "discount" ? value : updatedItem.discount
+            const tax = field === "tax" ? value : updatedItem.tax
+            updatedItem.subtotal = qty * price - discount + tax
           }
-          return updatedItem;
+          return updatedItem
         }
-        return item;
-      })
-    );
-  };
+        return item
+      }),
+    )
+  }
 
   const removeItem = (idx: number) => {
-    setQuotationItems((items) => items.filter((_, i) => i !== idx));
-  };
+    setQuotationItems((items) => items.filter((_, i) => i !== idx))
+  }
 
-  const subtotal = quotationItems.reduce((sum, item) => sum + item.subtotal, 0);
-  const orderTaxAmount = (subtotal * Number(form.orderTax)) / 100;
+  const subtotal = quotationItems.reduce((sum, item) => sum + item.subtotal, 0)
+  const orderTaxAmount = (subtotal * Number(form.orderTax)) / 100
   const discountAmount =
-    form.discountType === "Percent"
-      ? (subtotal * Number(form.discount)) / 100
-      : Number(form.discount);
-  const shippingAmount = Number(form.shipping);
-  const grand_total = subtotal + orderTaxAmount + shippingAmount - discountAmount;
+    form.discountType === "Percent" ? (subtotal * Number(form.discount)) / 100 : Number(form.discount)
+  const shippingAmount = Number(form.shipping)
+  const grand_total = subtotal + orderTaxAmount + shippingAmount - discountAmount
 
   useEffect(() => {
-    setForm((prev) => ({ ...prev, grand_total: grand_total }));
-  }, [subtotal, form.orderTax, form.discount, form.discountType, form.shipping]);
+    setForm((prev) => ({ ...prev, grand_total: grand_total }))
+  }, [subtotal, form.orderTax, form.discount, form.discountType, form.shipping])
 
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState("")
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+    setForm({ ...form, [e.target.name]: e.target.value })
+  }
 
   const handleSelect = (name: string, value: string) => {
-    setForm({ ...form, [name]: value });
-  };
+    setForm({ ...form, [name]: value })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    const now = new Date();
-    const ref = `QT_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,"0")}${String(now.getDate()).padStart(2,"0")}${String(now.getHours()).padStart(2,"0")}${String(now.getMinutes()).padStart(2,"0")}${String(now.getSeconds()).padStart(2,"0")}`;
+    e.preventDefault()
+    setLoading(true)
+    setMessage("")
+    const now = new Date()
+    const ref = `QT_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`
     const { error } = await supabase.from("quotations").insert([
       {
         date: form.date,
         ref: ref,
         customer: form.customer,
         warehouse: form.warehouse,
+        order_tax: form.orderTax, // Added
+        discount: form.discount, // Added
+        shipping: form.shipping, // Added
+        details: form.details, // Added
         grand_total: form.grand_total,
       },
-    ]);
-    setLoading(false);
+    ])
+    setLoading(false)
     if (error) {
-      setMessage("Error: " + error.message);
+      setMessage("Error: " + error.message)
     } else {
-      setMessage("Quotation created!");
+      setMessage("Quotation created!")
       setForm({
         date: new Date().toISOString().slice(0, 19),
         customer: "",
@@ -171,11 +180,11 @@ export default function AddQuotationPage() {
         shipping: 0,
         details: "",
         grand_total: 0,
-      });
-      setQuotationItems([]);
+      })
+      setQuotationItems([])
+      router.push("/quotations/all-quotations")
     }
-    router.push('/quotations/all-quotations')
-  };
+  }
 
   return (
     <div className="container mx-auto p-2 sm:p-4">
@@ -183,43 +192,49 @@ export default function AddQuotationPage() {
       <Separator className="my-2 sm:my-4" />
       <form onSubmit={handleSubmit}>
         <Card className="p-2 sm:p-6 space-y-4 sm:space-y-6">
-          <CardHeader className="p-2 sm:p-6">
-            <CardTitle className="text-lg sm:text-xl">Add Quotation</CardTitle>
-          </CardHeader>
           <CardContent className="space-y-3 sm:space-y-4 p-2 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="space-y-1">
                 <Label>Date</Label>
-                <Input type="datetime-local" name="date" value={form.date} onChange={handleChange} className="text-sm" />
+                <Input
+                  type="datetime-local"
+                  name="date"
+                  value={form.date}
+                  onChange={handleChange}
+                  className="text-sm"
+                />
               </div>
               <div className="space-y-1">
                 <Label>Customer *</Label>
-                <Select value={form.customer} onValueChange={v => handleSelect("customer", v)}>
+                <Select value={form.customer} onValueChange={(v) => handleSelect("customer", v)}>
                   <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Choose Customer" />
                   </SelectTrigger>
                   <SelectContent>
-                    {customers.map(c => (
-                      <SelectItem key={c.id} value={c.name} className="text-sm">{c.name}</SelectItem>
+                    {customers.map((c) => (
+                      <SelectItem key={c.id} value={c.name} className="text-sm">
+                        {c.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
                 <Label>Warehouse *</Label>
-                <Select value={form.warehouse} onValueChange={v => handleSelect("warehouse", v)}>
+                <Select value={form.warehouse} onValueChange={(v) => handleSelect("warehouse", v)}>
                   <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Choose Warehouse" />
                   </SelectTrigger>
                   <SelectContent>
-                    {warehouses.map(w => (
-                      <SelectItem key={w.id} value={w.name} className="text-sm">{w.name}</SelectItem>
+                    {warehouses.map((w) => (
+                      <SelectItem key={w.id} value={w.name} className="text-sm">
+                        {w.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-
             {/* Product Search & Table */}
             <div className="bg-muted rounded-md p-3 sm:p-4">
               <div className="relative mb-3 sm:mb-4">
@@ -228,7 +243,7 @@ export default function AddQuotationPage() {
                   <Input
                     placeholder="Scan/Search Product by code or name"
                     value={search}
-                    onChange={e => setSearch(e.target.value)}
+                    onChange={(e) => setSearch(e.target.value)}
                     className="pl-10 text-sm"
                   />
                   {searchLoading && (
@@ -268,8 +283,6 @@ export default function AddQuotationPage() {
                       <th className="p-1 sm:p-2">Price</th>
                       <th className="p-1 sm:p-2 hidden sm:table-cell">Stock</th>
                       <th className="p-1 sm:p-2">Qty</th>
-                      <th className="p-1 sm:p-2 hidden sm:table-cell">Discount</th>
-                      <th className="p-1 sm:p-2 hidden sm:table-cell">Tax</th>
                       <th className="p-1 sm:p-2">Subtotal</th>
                       <th className="p-1 sm:p-2">Action</th>
                     </tr>
@@ -277,7 +290,9 @@ export default function AddQuotationPage() {
                   <tbody>
                     {quotationItems.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="text-center p-2 text-sm">No data Available</td>
+                        <td colSpan={9} className="text-center p-2 text-sm">
+                          No data Available
+                        </td>
                       </tr>
                     ) : (
                       quotationItems.map((item, idx) => (
@@ -293,7 +308,7 @@ export default function AddQuotationPage() {
                               step="0.01"
                               min="0"
                               value={item.net_unit_price}
-                              onChange={e => updateItem(idx, "net_unit_price", Number(e.target.value))}
+                              onChange={(e) => updateItem(idx, "net_unit_price", Number(e.target.value))}
                               className="w-16 sm:w-24 text-xs sm:text-sm"
                             />
                           </td>
@@ -303,33 +318,19 @@ export default function AddQuotationPage() {
                               type="number"
                               min="1"
                               value={item.qty}
-                              onChange={e => updateItem(idx, "qty", Math.max(1, Number(e.target.value)))}
+                              onChange={(e) => updateItem(idx, "qty", Math.max(1, Number(e.target.value)))}
                               className="w-12 sm:w-20 text-xs sm:text-sm"
-                            />
-                          </td>
-                          <td className="p-1 sm:p-2 hidden sm:table-cell">
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={item.discount}
-                              onChange={e => updateItem(idx, "discount", Number(e.target.value))}
-                              className="w-16 sm:w-24 text-xs sm:text-sm"
-                            />
-                          </td>
-                          <td className="p-1 sm:p-2 hidden sm:table-cell">
-                            <Input
-                              type="number"
-                              step="0.01"
-                              min="0"
-                              value={item.tax}
-                              onChange={e => updateItem(idx, "tax", Number(e.target.value))}
-                              className="w-16 sm:w-24 text-xs sm:text-sm"
                             />
                           </td>
                           <td className="p-1 sm:p-2">${item.subtotal.toFixed(2)}</td>
                           <td className="p-1 sm:p-2">
-                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8" onClick={() => removeItem(idx)}>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 sm:h-8 sm:w-8"
+                              onClick={() => removeItem(idx)}
+                            >
                               <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
                             </Button>
                           </td>
@@ -340,15 +341,17 @@ export default function AddQuotationPage() {
                 </table>
               </div>
               <div className="flex flex-col items-end mt-3 sm:mt-4 space-y-1 text-sm">
-                <div>Order Tax: ${orderTaxAmount.toFixed(2)} ({form.orderTax}%)</div>
-                <div>Discount: {form.discountType === "Percent"
-                  ? `${form.discount}%`
-                  : `$${Number(form.discount).toFixed(2)}`}</div>
+                <div>
+                  Order Tax: ${orderTaxAmount.toFixed(2)} ({form.orderTax}%)
+                </div>
+                <div>
+                  Discount:{" "}
+                  {form.discountType === "Percent" ? `${form.discount}%` : `$${Number(form.discount).toFixed(2)}`}
+                </div>
                 <div>Shipping: ${shippingAmount.toFixed(2)}</div>
                 <div className="font-bold">Grand Total: ${grand_total.toFixed(2)}</div>
               </div>
             </div>
-
             {/* Order Tax, Discount, Shipping */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="space-y-1">
@@ -362,13 +365,17 @@ export default function AddQuotationPage() {
                 <Label>Discount</Label>
                 <div className="flex items-center">
                   <Input name="discount" value={form.discount} onChange={handleChange} className="text-sm" />
-                  <Select value={form.discountType} onValueChange={v => handleSelect("discountType", v)}>
+                  <Select value={form.discountType} onValueChange={(v) => handleSelect("discountType", v)}>
                     <SelectTrigger className="ml-2 w-20 text-sm">
                       <SelectValue placeholder="Fixed" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Fixed" className="text-sm">Fixed</SelectItem>
-                      <SelectItem value="Percent" className="text-sm">Percent</SelectItem>
+                      <SelectItem value="Fixed" className="text-sm">
+                        Fixed
+                      </SelectItem>
+                      <SelectItem value="Percent" className="text-sm">
+                        Percent
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -395,5 +402,5 @@ export default function AddQuotationPage() {
         </Card>
       </form>
     </div>
-  );
+  )
 }
