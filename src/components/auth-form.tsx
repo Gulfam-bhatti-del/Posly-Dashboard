@@ -1,5 +1,4 @@
 "use client"
-
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
@@ -7,12 +6,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { toast } from "sonner"
+import { toast } from "sonner" // Ensure sonner is imported
 import { Eye, EyeOff } from "lucide-react"
-import { ToastContainer } from "react-toastify"
-import { redirect } from "next/navigation"
+import { useRouter } from "next/navigation"
 
 export function AuthForm() {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -23,36 +22,33 @@ export function AuthForm() {
 
   const handleEmailAuth = async (type: "signin" | "signup") => {
     setLoading(true)
-
     try {
       if (type === "signup") {
         if (formData.password !== formData.confirmPassword) {
-          toast.error("Passwords don't match")
+          toast.error("Passwords don't match.") // Error message for password mismatch
           return
         }
-
         const { error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
         })
-
         if (error) throw error
-        toast.success("Check your email for the confirmation link!")
+        toast.success("Check your email for the confirmation link!") // Success message for signup
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
         })
-
         if (error) throw error
-        toast.success("Successfully signed in!")
+        toast.success("Successfully signed in!") // Success message for signin
       }
+      router.push("/dashboard") // Client-side navigation after successful auth
     } catch (error: any) {
-      toast.error(error.message)
+      // General error handling for Supabase errors
+      toast.error("Authentication failed: " + error.message)
     } finally {
       setLoading(false)
     }
-    redirect('/dashboard')
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -61,7 +57,7 @@ export function AuthForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <ToastContainer />
+      {/* No ToastContainer needed for sonner */}
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
@@ -73,7 +69,6 @@ export function AuthForm() {
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
-
             <TabsContent value="signin" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signin-email">Email</Label>
@@ -85,7 +80,6 @@ export function AuthForm() {
                   onChange={(e) => handleInputChange("email", e.target.value)}
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="signin-password">Password</Label>
                 <div className="relative">
@@ -107,7 +101,6 @@ export function AuthForm() {
                   </Button>
                 </div>
               </div>
-
               <Button
                 onClick={() => handleEmailAuth("signin")}
                 disabled={loading || !formData.email || !formData.password}
@@ -116,7 +109,6 @@ export function AuthForm() {
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
             </TabsContent>
-
             <TabsContent value="signup" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="signup-email">Email</Label>
@@ -128,7 +120,6 @@ export function AuthForm() {
                   onChange={(e) => handleInputChange("email", e.target.value)}
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="signup-password">Password</Label>
                 <div className="relative">
@@ -150,7 +141,6 @@ export function AuthForm() {
                   </Button>
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
                 <Input
@@ -161,7 +151,6 @@ export function AuthForm() {
                   onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                 />
               </div>
-
               <Button
                 onClick={() => handleEmailAuth("signup")}
                 disabled={loading || !formData.email || !formData.password || !formData.confirmPassword}
