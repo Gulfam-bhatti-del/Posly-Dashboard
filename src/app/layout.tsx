@@ -8,7 +8,6 @@ import { AppSidebar } from "@/components/Sidebar";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { PageTransition } from "@/components/page-transition";
 import { AuthWrapper } from "@/components/auth-wrapper";
-import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Posly Dashboard",
@@ -33,7 +32,6 @@ export default function RootLayout({
                 <main className="flex-1 p-4">
                   <PageTransition>
                     {children}
-                    <Toaster position="top-center" />
                   </PageTransition>
                 </main>
                 <div className="mt-8">
