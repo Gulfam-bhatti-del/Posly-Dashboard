@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { toast } from "sonner" // Ensure sonner is imported
+import { toast, Toaster } from "sonner" // Ensure sonner is imported
 import { Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -57,7 +57,8 @@ export function AuthForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      {/* No ToastContainer needed for sonner */}
+
+      <Toaster position="top-center" />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
